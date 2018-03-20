@@ -1,17 +1,11 @@
-const {Pool} = require('pg');
-const pool = new Pool({
-    user : 'postgres',
-    host : 'localhost',
-    database : 'blogdb',
-    password : 'ckddnjs1',
-    port : '5432'
-});
+
+var dbpool = require('./dbpool.js');
 module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
-	pool.on('error',(err,client)=>{
+	dbpool.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	dbpool.pool.connect((err,client,done)=>{
 		if(err) throw err;
 		client.query('select rblognum as rnum, rblogname as rname, rblogcontext as rcontext, rblogdate as rdate from replyblog where rblogparent = $1 ;',[reqBoardNum],(err,res)=>{
 			done();
@@ -26,11 +20,11 @@ module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
 	});
 }
 module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
-	pool.on('error',(err,client)=>{
+	dbpool.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	dbpool.pool.connect((err,client,done)=>{
 		if(err) throw err;
 		client.query('insert into replyblog (rblogparent,rblogdate,rblogname,rblogmail,rblogpassword,rblogcontext) values( $1 ,Now(),$2,$3,$4,$5)  returning rblogparent as num;',[reqArray.postNum,reqArray.name,reqArray.mail,reqArray.pw,reqArray.context],(err,res)=>{
 			done();
@@ -50,11 +44,11 @@ module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
 	});
 }
 module.exports.deleteReplySelected = (reqArray, cb)=>{
-	pool.on('error',(err,client)=>{
+	dbpool.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	dbpool.pool.connect((err,client,done)=>{
 		if(err) throw err;
 		client.query('DELETE FROM public.replyblog WHERE rblognum=$1 and rblogpassword = $2 returning *;',[reqArray.rNum,reqArray.rInPwd],(err,res)=>{
 			done();
