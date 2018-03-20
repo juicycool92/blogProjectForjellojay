@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+
+<script type="text/javascript">
+    var globalVar;
+
+    function submitReply() {
+        console.log('hi');
+    }
+    function writeReply(replyArr){
+        $('#replyTable tbody').empty();
+        for(var i = 0 ;  i < replyArr.length ; i ++){
+            console.log('loop'+i);
+            var tmp = '<tr><th id="replyId'+i+'"></th><th id="replyContext'+i+'"></th><th id="replyDate'+i+'"></th></tr>';
+            $('#replyTable').append(tmp);
+            $('#replyId'+i).text(replyArr[i].rname);
+            $('#replyContext'+i).append(replyArr[i].rcontext);
+            $('#replyDate'+i).text($.format.date((new Date(replyArr[i].rdate)), "yyyy/M/d HH:mm:ss"));
+            $('#replyDate'+i).append('<img src="public/deleteImg.png" onclick="deleteReply(\''+replyArr[i].rnum+'\')">');
+        }
+    }
+    function deleteReply(reqReplyNum){
+        //alert(reqReplyNum);
+        $('#modalReplyNum').val(reqReplyNum);
+        $('#terms-of-service').modal().open();
+    }
+    $(document).ready(function(){
+
+
+        $('#postTitle').append('<%-title%>');
+        $('#postCategory').append('<%=category1%>/<%=category2%>');
+        var datee = '<%=date%>';
+        console.log(datee);
+        $('#postDate').append($.format.date((new Date(datee)), "yyyy년 M월 d일\n hh시 mm분"));
+        $('#postContext').append('<%-context%>');
+        if('<%=prevTitle%>'){
+            $('#prevLink').attr('href','/postblog?reqBoardNum=<%=prevNum%>')
+            $('#prevTitle').text('<%=prevTitle%>');
+        }
+        if('<%=nextTitle%>'){
+            $('#nextLink').attr('href','/postblog?reqBoardNum=<%=nextNum%>')
+            $('#nextTitle').text('<%=nextTitle%>');
+        }
+
+        $.ajax({
+            type : "GET",
+            url : "/loadReply?reqBoardNum=<%=num%>",
+            dataType : "JSON",
+            success : function(data){
+                var replyArr = JSON.parse(data).reply;
+                console.log(replyArr.length);
+                if(replyArr.length === 0){
+                    $('#replyTable').append('<tr><th colspan="3" style="text-align: center"> No Comment Yet</th></tr>');
+                }else{
+                    writeReply(replyArr);
+                }
+            },
+            error : function(){
+                console.log('req loadReply failed');
+            },
+        });
+        $('#submitReply').on('click',function(){
+            if(!($('#inputName').val() && $('#inputPasswd').val() && $('#inputContext').val())){
+                alert('필수입력란이 공백입니다');
+            }else {
+                var num = '<%= num %>';
+                var name = $('#inputName').val();
+                var passwd = $('#inputPasswd').val();
+                var email = $('#inputMail').val();
+                var context = $('#inputContext').val().replace(/\n/g, "<br/>");
+                var sendjsonSting = {"postNum": num, "name": name, "pw": passwd, "mail": email, "context": context};
+                console.log(JSON.stringify(sendjsonSting));
+                $(function () {
+                    $.ajax({
+                        type: "POST",
+                        contentType: "application/json",
+                        url: "/addReply",
+                        data: JSON.stringify(sendjsonSting),
+                        dataType:"json",
+                        success: function (data2) {
+                            console.log(JSON.parse(data2).reply.length);
+                            $('#inputName').val('');
+                            $('#inputPasswd').val('');
+                            $('#inputMail').val('');
+                            $('#inputContext').val('');
+                            writeReply(JSON.parse(data2).reply);
+                        },
+                        error: function () {
+                            console.log('faild');
+                        }
+                    });
+                });
+            }
+        });
+        $('#modalBtnDelete').on('click',function(){
+            var sendjsonString = '{"postNum":"<%-num%>","rNum":"'+$('#modalReplyNum').val()+'","rInPwd":"'+$('#modalInputPwd').val()+'"}';
+            console.log(sendjsonString);
+            $(function () {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json",
+                    url: "/deleteReply",
+                    data: sendjsonString,
+                    dataType: "json",
+                    success: function (data3) {
+                        console.log('success');
+                        $('#terms-of-service').modal().close();
+                        writeReply(JSON.parse(data3).reply);
+                    },
+                    error: function () {
+                        console.log('wrong?');
+                        alert('wrong password');
+                    }
+                });
+            });
+        });
+        $('#modalBtnCancle').on('click',function(){
+            $('#terms-of-service').modal().close();
+        });
+
+    });
+
+
+</script>
+
+
+<nav class="container align-content-center" style="float: left; align-content: left; width: 75%; background-color: #ffffff;margin-right: 1%">
+<div class="container align-content-center row">
+    <table class="table table-responsive" style="width: 70%">
+        <tr>
+            <th colspan="2" style="text-align: center"><h1 id="postTitle"></h1></th>
+        </tr>
+        <tr>
+            <th class="text-left" id="postCategory"><b style="font-size: large">Category</b><br></th>
+            <th class="text-right" id="postDate"><b style="font-size: large">Date</b><br></th>
+        </tr>
+        <tr>
+            <th colspan="2">
+                <p id="postContext"></p>
+            </th>
+        </tr>
+        <tr>
+            <th class="text-left">
+                <a href="#" id="prevLink">
+                Prev
+                <p id="prevTitle"></p>
+                </a>
+            </th>
+            <th class="text-right">
+                <a href="#" id="nextLink">
+                Next
+                <p id="nextTitle">
+                </p>
+                </a>
+            </th>
+        </tr>
+    </table>
+
+    <div style="width: 65%;height: 2%;text-align: center" align="center" class="col-auto">
+        <div class="align-content-center" style="display: inline-block" >
+            <table class="table">
+                <tr>
+                    <th colspan="2" style="width: fit-content">
+                        Name *
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                    <th >
+                        Password *
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="2">
+                        <input type="text" size="12" id="inputName">
+                    </th>
+                    <th>
+                        <input type="email"style="width: 16.5em" id="inputMail">
+
+                    </th>
+                    <th>
+                        <input type="password" style="width: 5.5em" id="inputPasswd">
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="3">
+                        Context *
+                    </th>
+                    <th rowspan="2" style="padding-top: 3.2em">
+                        <button style="height: 4.5em;width: 5.5em" id="submitReply" > SUBMIT</button>
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="3">
+                        <textarea cols="47" rows="2" id="inputContext"></textarea>
+                    </th>
+
+                </tr>
+
+            </table>
+        </div>
+    </div>
+
+    <div style="width: 70%;height: fit-content" align="center" class="col-auto align-content-center">
+        <table class="table" border="1" style="width: 90%" align="center" id="replyTable">
+            <thead>
+                <tr>
+                    <th style="width: auto;max-width: 20%; height: 2em" >Name</th>
+                    <th style="width: auto;max-width: 50%">Context</th>
+                    <th style="width: auto;max-width: 15%">Date</th>
+                </tr>
+            </thead>
+            <tr></tr>
+        </table>
+    </div>
+</div>
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="terms-of-service">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Reply</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Require Password</p>
+                    <input type="password" id="modalInputPwd">
+                    <input type="text" hidden="hidden" id="modalReplyNum">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="modalBtnDelete">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="modalBtnCancle">Calcle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</nav>
+<% include rightnavbar %>
+
+
+<nav class="container align-content-center" style="float: right; align-content: center; width: 100%; height: 200px;background-color: #9fcdff">
+    <!-- footer -->
+    footer
+</nav>
+
+</body>
+<%include footer%>
+</html>

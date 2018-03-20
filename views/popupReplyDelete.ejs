@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#okBtn').on('click',function(){
+            if(!$('#inputPw').val()){
+                alert('비밀번호를 입력 해 주세요');
+            }else{
+                var sendjsonString = {"rNum":"","rInPwd":$('#inputPw').val()};
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/text",
+                    url: "/deleteReply",
+                    data: JSON.stringify(sendjsonSting),
+                    dataType:"text",
+                    success: function (data2) {}
+                });
+            }
+        });
+    });
+</script>
+<%include navbar %>
+<div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Delete Reply..</h5>
+                <button type="button" class="close" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div class="modal-body">
+                    비밀번호를 입력 해 주세요.
+                    <input type="password" id="inputPw"><br>
+                    <input type="button" value="Ok" id="okBtn">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Delete</button>
+                    <button type="button" class="btn btn-warning">Cancle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%include footer%>
+</body>
+
+</html>
