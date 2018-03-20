@@ -1,10 +1,10 @@
 ﻿const {Pool} = require('pg');
 const pool = new Pool({
-    user : 'postgres',
-    host : 'localhost',
-    database : 'blogdb',
-    password : 'ckddnjs1',
-    port : '5432'
+    user : '',
+    host : '',
+    database : '',
+    password : '',
+    port : ''
 });
 module.exports.callBlogAtPageNum = (curPage,cb)=>{
 	//curPage는 불러올 페이지의 번호를 언급한다. curPage가 0일 경우에는, num이 desc로 되었을때 처음 10종목을,
