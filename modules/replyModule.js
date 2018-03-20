@@ -1,10 +1,10 @@
 const {Pool} = require('pg');
 const pool = new Pool({
-    user : 'postgres',
-    host : 'localhost',
-    database : 'blogdb',
-    password : 'ckddnjs1',
-    port : '5432'
+    user : '',
+    host : '',
+    database : '',
+    password : '',
+    port : ''
 });
 module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
 	pool.on('error',(err,client)=>{
