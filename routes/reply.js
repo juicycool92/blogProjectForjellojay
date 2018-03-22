@@ -1,13 +1,18 @@
 module.exports = (app,replyModule,jsonCreator)=>{
 	app.get('/loadReply',(req,res)=>{
-		
+		var reqBoardType = req.query.reqBoardType;//blog ==0 ; code==1
+		console.log('boardType'+reqBoardType);
 		var reqBoard = req.query.reqBoardNum;
 		console.log('[D]Helo'+reqBoard);
+		if(!reqBoardType){
+			console.log('[reply.js][/loadReply]err request boardType is null');
+			res.status(204);
+		}
 		if(!reqBoard){
 			console.log('[reply.js][/loadReply]err request num is null');
-			res.send(-1);
+			res.status(204);
 		}else{
-			replyModule.callReplyFromSelectedBoard(reqBoard,(err,result)=>{
+			replyModule.callReplyFromSelectedBoard(reqBoardType,reqBoard,(err,result)=>{
 				if(err){
 					console.log('[reply.js][/loadReply]err sql err :'+err);
 				}else{

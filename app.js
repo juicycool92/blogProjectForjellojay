@@ -15,8 +15,11 @@ app.listen(8080,()=>{
 
 
 var blogModule = require('./modules/blogModule.js');
+var codeModule = require('./modules/codeModule.js');
 var jsonCreator = require('./modules/jsonCreator.js');
 var replyModule = require('./modules/replyModule.js');
 var main = require('./routes/main.js')(app);
+var board = require('./routes/board.js')(app,blogModule,codeModule,jsonCreator);
 var blog = require('./routes/blog.js')(app,blogModule,jsonCreator);
-var reply = require('./routes/reply.js')(app,replyModule,jsonCreator);3
+var code = require('./routes/code.js')(app,codeModule,jsonCreator);
+var reply = require('./routes/reply.js')(app,replyModule,jsonCreator);

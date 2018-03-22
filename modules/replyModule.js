@@ -1,19 +1,21 @@
-const {Pool} = require('pg');
-const pool = new Pool({
-    user : 'postgres',
-    host : 'localhost',
-    database : 'blogdb',
-    password : 'ckddnjs1',
-    port : '5432'
-});
-module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
-	pool.on('error',(err,client)=>{
+var poolSql = require('./poolsql');
+module.exports.callReplyFromSelectedBoard = (reqBoardType,reqBoardNum,cb)=>{
+	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	poolSql.pool.connect((err,client,done)=>{
+		var blogType;
 		if(err) throw err;
-		client.query('select rblognum as rnum, rblogname as rname, rblogcontext as rcontext, rblogdate as rdate from replyblog where rblogparent = $1 ;',[reqBoardNum],(err,res)=>{
+		if(reqBoardType==='0'){
+			blogType = 'replyblog';
+		}else if(reqBoardType === '1'){
+			blogType = 'replycode';
+		}else{
+			done();
+			cb('wrong reqBoardType',null);
+		}
+		client.query('select rblognum as rnum, rblogname as rname, rblogcontext as rcontext, rblogdate as rdate from '+blogType+' where rblogparent = $1 ;',[reqBoardNum],(err,res)=>{
 			done();
 			if(err){
 				console.log(err.stack);
@@ -26,11 +28,11 @@ module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
 	});
 }
 module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
-	pool.on('error',(err,client)=>{
+	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
 		client.query('insert into replyblog (rblogparent,rblogdate,rblogname,rblogmail,rblogpassword,rblogcontext) values( $1 ,Now(),$2,$3,$4,$5)  returning rblogparent as num;',[reqArray.postNum,reqArray.name,reqArray.mail,reqArray.pw,reqArray.context],(err,res)=>{
 			done();
@@ -50,11 +52,11 @@ module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
 	});
 }
 module.exports.deleteReplySelected = (reqArray, cb)=>{
-	pool.on('error',(err,client)=>{
+	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
 		client.query('DELETE FROM public.replyblog WHERE rblognum=$1 and rblogpassword = $2 returning *;',[reqArray.rNum,reqArray.rInPwd],(err,res)=>{
 			done();

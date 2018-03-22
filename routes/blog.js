@@ -26,36 +26,35 @@ module.exports = (app,blogModule,jsonCreator)=>
 			}
 		});
 	});
-	app.get('/postblog',(req,res)=>
-	{
-		var reqBoardNum = req.query.reqBoardNum;
-		blogModule.callSelectedPost(reqBoardNum,(err,result)=>{
-			if(err){
-				console.log('[blog.js]loading failed at /postblog err)'+err);
-				res.status(204);
-				res.send();
-			}else{
-				blogModule.pickPrevNextPost(reqBoardNum,(err2,result2)=>{
-					if(err2){
-						console.log('[blog.js]loading failed at /postblog err)'+err2);
-						res.status(204);
-						res.send();
-					}else{
-						jsonCreator.writeSinglePostandPN(result,result2,(err3,jsonResult)=>{
-							if(err3){
-								console.log('[blog.js]loading failed at /postblog err)'+err3);
-								res.status(204);
-								res.send();
-							}else{
-								console.log('[D1]'+jsonResult.toString());
-								console.log('[D2]'+JSON.stringify(jsonResult));
-								res.render('../views/post.ejs',JSON.parse(jsonResult));
-							}
-						});
-					}
-				});
-			}
-		})
-		 
-	});
+	// app.get('/postblog',(req,res)=>
+	// {
+	// 	var reqBoardNum = req.query.reqBoardNum;
+	// 	blogModule.callSelectedPost(reqBoardNum,(err,result)=>{
+	// 		if(err){
+	// 			console.log('[blog.js]loading failed at /postblog err)'+err);
+	// 			res.status(204);
+	// 			res.send();
+	// 		}else{
+	// 			blogModule.pickPrevNextPost(reqBoardNum,(err2,result2)=>{
+	// 				if(err2){
+	// 					console.log('[blog.js]loading failed at /postblog err)'+err2);
+	// 					res.status(204);
+	// 					res.send();
+	// 				}else{
+	// 					jsonCreator.writeSinglePostandPN(result,result2,(err3,jsonResult)=>{
+	// 						if(err3){
+	// 							console.log('[blog.js]loading failed at /postblog err)'+err3);
+	// 							res.status(204);
+	// 							res.send();
+	// 						}else{
+	// 							console.log('[D1]'+jsonResult.toString());
+	// 							console.log('[D2]'+JSON.stringify(jsonResult));
+	// 							res.render('../views/blogPost.ejs',JSON.parse(jsonResult));
+	// 						}
+	// 					});
+	// 				}
+	// 			});
+	// 		}
+	// 	})
+	// });
 }

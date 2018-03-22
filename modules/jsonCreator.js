@@ -27,6 +27,38 @@ module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
 	}
 	cb(null,jsonString);
 }
+module.exports.writeCodeList=(raws,curPage,boardSize,cb)=>{
+	var postLen = raws.length;
+	var jsonString = '{"boardSize":"'+boardSize+'","curPage":"'+curPage+'","pageSize":"';
+	var pageSize;
+	if(boardSize%10===0)
+		pageSize = boardSize/10;
+	else
+		pageSize = Math.floor((boardSize/10)+1);
+	jsonString +=pageSize+'","content":[';
+	switch(postLen){
+		case 0 : {
+			jsonString += '{"num":"","category1":"","category2":"","title":"","date":""}]}';
+			break;
+		}//cb('[jsonCreator][writeCodeList]no raws. returning null',null); return;
+		case 1 : {
+			jsonString += '{"num":"'+raws[0].num+'","category1":"'+raws[0].category1+'","category2":"'+raws[0].category2+'","title":"'+raws[0].title+'","date":"'+raws[0].date+'"}]}';
+			break;
+		}
+		default :{
+			for(var i = 0 ; i < raws.length ; i++){
+				if(i == raws.length-1){
+					jsonString += '{"num":"'+raws[i].num+'","category1":"'+raws[i].category1+'","category2":"'+raws[i].category2+'","title":"'+raws[i].title+'","date":"'+raws[i].date+'"}]}';					
+				}else{
+					jsonString += '{"num":"'+raws[i].num+'","category1":"'+raws[i].category1+'","category2":"'+raws[i].category2+'","title":"'+raws[i].title+'","date":"'+raws[i].date+'"},';
+				}
+			}
+			break;
+		}
+		
+	}
+	cb(null,jsonString);
+}
 module.exports.writeSinglePost = (raws,cb)=>{
 	if(!raws){
 		cb('[jsonCreator][writeSinglePost]raws are empty',null);

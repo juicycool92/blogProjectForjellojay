@@ -7,7 +7,7 @@
 <script type="text/javascript">
 var globalVar;
 function clickPost(boardNum){
-	location.href='/postblog?reqBoardNum='+globalVar[boardNum].num;
+	location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=blog';
 }
 
 $(document).ready(function(){
