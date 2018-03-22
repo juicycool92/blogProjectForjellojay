@@ -6,7 +6,7 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
         var reqBoardType = req.query.reqBoardType;
         switch(reqBoardType){
             case 'blog' : {
-                getListFromBlog(reqBoardNum,(err,jsonResult)=>{
+                getListFromBlog(reqBoardNum,reqBoardType,(err,jsonResult)=>{
                     if(err){
                         console.log('[blog.js][/readPost]err at getListfromBlog'+err);
                     }else{
@@ -17,7 +17,7 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
                 break;
             }
             case 'code' : {
-                getListFromCode(reqBoardNum,(err,jsonResult)=>{
+                getListFromCode(reqBoardNum,reqBoardType,(err,jsonResult)=>{
                     if(err){
                         console.log('[blog.js][/readPost]err at getListFromCode'+err);
                     }else{
@@ -30,7 +30,7 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
             default : {}
         }
     });
-    function getListFromBlog(reqBoardNum,cb){
+    function getListFromBlog(reqBoardNum,reqBoardType,cb){
         blogModule.callSelectedPost(reqBoardNum,(err,result)=>{
 			if(err){
 				cb(err,null);
@@ -39,7 +39,7 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
 					if(err2){
                         cb(err2,null);					
                     }else{
-						jsonCreator.writeSinglePostandPN(result,result2,(err3,jsonResult)=>{
+						jsonCreator.writeSinglePostandPN(result,result2,reqBoardType,(err3,jsonResult)=>{
 							if(err3){
 								cb(err3,null);
 							}else{
@@ -51,16 +51,16 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
 			}
 		})
     }
-    function getListFromCode(reqBoardNum,cb){
+    function getListFromCode(reqBoardNum,reqBoardType,cb){
         codeModule.callSelectedPost(reqBoardNum,(err,result)=>{
 			if(err){
 				cb(err,null);
 			}else{
-				blogModule.pickPrevNextPost(reqBoardNum,(err2,result2)=>{
+				codeModule.pickPrevNextPost(reqBoardNum,(err2,result2)=>{
 					if(err2){
                         cb(err2,null);					
                     }else{
-						jsonCreator.writeSinglePostandPN(result,result2,(err3,jsonResult)=>{
+						jsonCreator.writeSinglePostandPN(result,result2,reqBoardType,(err3,jsonResult)=>{
 							if(err3){
 								cb(err3,null);
 							}else{

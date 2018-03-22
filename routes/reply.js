@@ -36,7 +36,7 @@ module.exports = (app,replyModule,jsonCreator)=>{
 				res.status(400);
 				res.send();
 			}else{
-				replyModule.callReplyFromSelectedBoard(req.body.postNum,(err2,result)=>{
+				replyModule.callReplyFromSelectedBoard(req.body.postType,req.body.postNum,(err2,result)=>{
 					if(err2){
 						console.log('[reply.js][/addReply]err :'+err2);
 						console.log('entering err');
@@ -71,7 +71,7 @@ module.exports = (app,replyModule,jsonCreator)=>{
 					res.send();
 				}
 			}else{
-				replyModule.callReplyFromSelectedBoard(req.body.postNum,(err2,result)=>{
+				replyModule.callReplyFromSelectedBoard(req.body.postType,req.body.postNum,(err2,result)=>{
 					if(err2){
 						console.log('[reply.js][/addReply]err :'+err2);
 						console.log('entering err');

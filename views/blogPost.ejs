@@ -6,6 +6,7 @@
 
 <script type="text/javascript">
     var globalVar;
+    var curPostType;
 
     function submitReply() {
         console.log('hi');
@@ -29,7 +30,7 @@
     }
     $(document).ready(function(){
 
-
+        curPostType = '<%=boardType%>';
         $('#postTitle').append('<%-title%>');
         $('#postCategory').append('<%=category1%>/<%=category2%>');
         var datee = '<%=date%>';
@@ -37,17 +38,17 @@
         $('#postDate').append($.format.date((new Date(datee)), "yyyy년 M월 d일\n hh시 mm분"));
         $('#postContext').append('<%-context%>');
         if('<%=prevTitle%>'){
-            $('#prevLink').attr('href','/postblog?reqBoardNum=<%=prevNum%>')
+            $('#prevLink').attr('href','/readPost?reqBoardNum=<%=prevNum%>&reqBoardType='+curPostType)
             $('#prevTitle').text('<%=prevTitle%>');
         }
         if('<%=nextTitle%>'){
-            $('#nextLink').attr('href','/postblog?reqBoardNum=<%=nextNum%>')
+            $('#nextLink').attr('href','/readPost?reqBoardNum=<%=nextNum%>&reqBoardType='+curPostType)
             $('#nextTitle').text('<%=nextTitle%>');
         }
 
         $.ajax({
             type : "GET",
-            url : "/loadReply?reqBoardType=0&reqBoardNum=<%=num%>",
+            url : "/loadReply?reqBoardType="+curPostType+"&reqBoardNum=<%=num%>",
             dataType : "JSON",
             success : function(data){
                 var replyArr = JSON.parse(data).reply;
@@ -60,7 +61,7 @@
             },
             error : function(){
                 console.log('req loadReply failed');
-            },
+            }
         });
         $('#submitReply').on('click',function(){
             if(!($('#inputName').val() && $('#inputPasswd').val() && $('#inputContext').val())){
@@ -71,7 +72,7 @@
                 var passwd = $('#inputPasswd').val();
                 var email = $('#inputMail').val();
                 var context = $('#inputContext').val().replace(/\n/g, "<br/>");
-                var sendjsonSting = {"postNum": num, "name": name, "pw": passwd, "mail": email, "context": context};
+                var sendjsonSting = {"postType":curPostType,"postNum": num, "name": name, "pw": passwd, "mail": email, "context": context};
                 console.log(JSON.stringify(sendjsonSting));
                 $(function () {
                     $.ajax({
@@ -96,7 +97,7 @@
             }
         });
         $('#modalBtnDelete').on('click',function(){
-            var sendjsonString = '{"postNum":"<%-num%>","rNum":"'+$('#modalReplyNum').val()+'","rInPwd":"'+$('#modalInputPwd').val()+'"}';
+            var sendjsonString = '{"postType":"'+curPostType+'","postNum":"<%-num%>","rNum":"'+$('#modalReplyNum').val()+'","rInPwd":"'+$('#modalInputPwd').val()+'"}';
             console.log(sendjsonString);
             $(function () {
                 $.ajax({
