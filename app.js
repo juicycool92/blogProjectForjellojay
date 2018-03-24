@@ -5,6 +5,9 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var cookieSession = require('cookie-session') ;
+
+var counterModule = require('./modules/counterModule');
+
 app.set('views',path.resolve(__dirname,'views'));
 app.set('view engine','ejs');
 app.use(express.static(path.join(__dirname,"static")));
@@ -31,31 +34,61 @@ app.use((req,res,next)=>{
         remoteIp = 'localhost';
 
     var today = new Date();
-    var logStr;
+    //var logStr;
     today = today.setMinutes(0,0,0);
     if(!req.session.lastVisit | req.session.lastVisit != today){
         req.session.lastVisit = today;
-        console.log('time stamp changed!!');
-        logStr = '[INFO]['+remoteIp+']['+new Date()+']access/visit counted\n';
+        //console.log('time stamp changed!!');
+        
+        writeLog('[INFO]['+remoteIp+']['+new Date()+']access+logged\n',(err)=>{
+            if(err){
+                console.log('[app][writeLog]write err :'+err);
+            }
+        });
+
+        var todayDate = new Date().getFullYear()+'-'+((new Date().getMonth())+1)+'-'+new Date().getDate();
+        counterModule.countIncrease(todayDate,(err)=>{
+            if(err){
+                writeLog('[INFO]['+remoteIp+']['+new Date()+']access+logged\n',(err)=>{
+                    if(err){
+                        console.log('[app][writeLog]write err :'+err);
+                    }
+                });
+            }else{
+                writeLog('[ERR]['+remoteIp+']['+new Date()+']COUNTING VISITOR DB FAILED WITH ERR::\n::'+err,(err)=>{
+                    if(err){
+                        console.log('[app][writeLog]write err :'+err);
+                    }
+                });
+            }
+        })
     }else{
-        logStr = '[INFO]['+remoteIp+']['+new Date()+']access\n';
-    }
-    console.log('attemp write '+logStr);
-    fs.appendFile('log.txt',logStr,(err)=>{
-        console.log('??');
-        if(err){
-            console.log('error on write log');
-        }
-    });
+        writeLog('[INFO]['+remoteIp+']['+new Date()+']access\n',(err)=>{
+            if(err){
+                console.log('[app][writeLog]write err :'+err);
+            }
+        });
+    } 
     next();
 });
 var blogModule = require('./modules/blogModule.js');
 var codeModule = require('./modules/codeModule.js');
 var jsonCreator = require('./modules/jsonCreator.js');
 var replyModule = require('./modules/replyModule.js');
-var main = require('./routes/main.js')(app);
+var main = require('./routes/main.js')(app,counterModule);
 var board = require('./routes/board.js')(app,blogModule,codeModule,jsonCreator);
 var blog = require('./routes/blog.js')(app,blogModule,jsonCreator);
 var code = require('./routes/code.js')(app,codeModule,jsonCreator);
 var reply = require('./routes/reply.js')(app,replyModule,jsonCreator);
+
+function writeLog(logStr,cb){
+    fs.appendFile('log.txt',logStr,(err)=>{
+        console.log('??');
+        if(err){
+            cb(err);
+        }else{
+            cb(null);
+        }
+    });
+}
 

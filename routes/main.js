@@ -1,4 +1,4 @@
-module.exports = (app)=>
+module.exports = (app,counterModule)=>
 {
 	app.get('/',(req,res)=>{
 	    res.render('index');
@@ -7,5 +7,15 @@ module.exports = (app)=>
 	{
 		console.log('/about');
 		res.render('about');
+	});
+	app.get('/visitCounter',(req,res)=>{
+		counterModule.callCount((err,count)=>{
+			if(err){
+				console.log('[main.js][/visitCounter]err'+err);
+				res.status(204);
+			}else{
+				res.send({visit:count});
+			}
+		});
 	});
 }
