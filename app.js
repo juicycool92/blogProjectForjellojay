@@ -31,16 +31,18 @@ app.use((req,res,next)=>{
         remoteIp = 'localhost';
 
     var today = new Date();
+    var logStr;
     today = today.setMinutes(0,0,0);
     if(!req.session.lastVisit | req.session.lastVisit != today){
         req.session.lastVisit = today;
         console.log('time stamp changed!!');
-        var logStr = '[INFO]['+remoteIp+']['+new Date()+']access/visit counted';
+        logStr = '[INFO]['+remoteIp+']['+new Date()+']access/visit counted\n';
     }else{
-        var logStr = '[INFO]['+remoteIp+']['+new Date()+']access';
+        logStr = '[INFO]['+remoteIp+']['+new Date()+']access\n';
     }
-    
-    fs.writeFile('./log.txt',logStr,'utf8',(err,data)=>{
+    console.log('attemp write '+logStr);
+    fs.appendFile('log.txt',logStr,(err)=>{
+        console.log('??');
         if(err){
             console.log('error on write log');
         }
