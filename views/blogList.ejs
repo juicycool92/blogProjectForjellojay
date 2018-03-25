@@ -5,40 +5,45 @@
 <%include navbar %>
 
 <script type="text/javascript">
-var globalVar;
-function clickPost(boardNum){
-	location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=blog';
-}
+    var globalVar;
+    function clickPost(boardNum){
+	    location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=blog';
+    }
 
 $(document).ready(function(){
 	var i = 0;
 	
 	var test = JSON.parse('<%-JSON.stringify(content)%>');
 	globalVar = test;
-	while(test.length !== i){
-		//console.log(test[i]);
-		$('#list'+i).show();
-		$('#listId'+i).text(test[i].num);
-		$('#categoryId'+i).text(test[i].category1+'/'+test[i].category2);
-		$('#titleId'+i).text(test[i].title);
-		$('#dateId'+i).text($.format.date((new Date(test[i++].date)), "yy년 M월 d일"));
-		
-		  
-	}
+    if('<%- boardSize %>'==0){  //포스트가없을때. 예외처리용!
+        $('#list0').show();
+        $('#listId0').attr('colspan',4);
+        $('#listId0').css("text-align", "center"); 
+		$('#listId0').text('no post yet');
+    }else{
+        while(test.length !== i){
+		    $('#list'+i).show();
+		    $('#listId'+i).text(test[i].num);
+		    $('#categoryId'+i).text(test[i].category1+'/'+test[i].category2);
+		    $('#titleId'+i).text(test[i].title);
+		    $('#dateId'+i).text($.format.date((new Date(test[i++].date)), "yy년 M월 d일"));
+	    }
+    }
+	
     
-    $('#pagenationUL').append('<li><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/leftover.png" style="position: relative"></a></li>');
-    $('#pagenationUL').append('<li><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/left.png" style="position: relative"></a></li>');
+    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/leftover.png" style="position: relative"></a></li>');
+    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/left.png" style="position: relative"></a></li>');
     
 	for(var j = 0 ; j < <%=pageSize%> ; j++){
 		if(j===<%=curPage%>){
-			$('#pagenationUL').append('<li class="active"><a href=#>'+(<%=curPage%>+1)+'</a></li>');
+			$('#pagenationUL').append('<li class="active" style="float:left;display:table-cell"><a href=#>'+(<%=curPage%>+1)+'</a></li>');
 		}else{
-			$('#pagenationUL').append('<li><a href=\"/blogList?page='+j+'\">'+(j+1)+'</a></li>')	
+			$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page='+j+'\">'+(j+1)+'</a></li>')	
 		}
 	}
 	
-	$('#pagenationUL').append('<li><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
-	$('#pagenationUL').append('<li><a href=\"/blogList?page=<%=pageSize-1%>\" style="padding: 1px"><img src="../public/arrow/rightover.png" style="position: relative"></a></li>');
+	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
+	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=<%=pageSize-1%>\" style="padding: 1px"><img src="../public/arrow/rightover.png" style="position: relative"></a></li>');
     
 });
 
@@ -47,7 +52,7 @@ $(document).ready(function(){
 
 <nav class="container align-content-center" style="float: left; align-content: left; width: 75%; background-color: #ffffff;margin-right: 1%">
 
-    <div id="blogListDiv" class="container align-content-center" style="align-content: center; width: 75%">
+    <div id="blogListDiv" class="container align-content-center" style="align-content: center; width: 85%">
      <table class="table table-hover">
          <thead>
             <tr>
@@ -120,8 +125,8 @@ $(document).ready(function(){
             </tr>
          </tbody>
      </table>
-        <div class="container" align="center" style="width: 100%;height: auto">
-            <ul class="pagination"  id="pagenationUL"></ul>
+        <div class="container" align="center" style="width: fit-content;height: auto">
+            <ul class="pagination"  id="pagenationUL" style="display:table"></ul>
         </div>
     </div>
 

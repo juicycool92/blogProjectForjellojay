@@ -79,6 +79,23 @@ module.exports.pickPrevNextPost = (reqBoardNum,cb)=>{
 		});
 	});
 }
+module.exports.countSelectPost =(reqBoardNum)=>{ //해당 게시글의 조회수를 1 올리는 함수, 리턴필요가 없으므로 콜백이 없다.
+	poolSql.pool.on('error',(err,client)=>{
+		console.error('Unexpected err on idle clients',err);
+		process.exit(-1);
+	});
+	poolSql.pool.connect((err,client,done)=>{
+		if(err) throw err;
+		client.query('update boardcode set bcodecount = bcodecount+1 where bcodenum = $1 returning bcodecount;',[reqBoardNum],(err,res)=>{
+			done();
+			if(err){
+				console.log('[codeModule][countSelectPost][WARN]'+err.stack);
+			}else{
+				console.log('[codeModule][countSelectPost][INFO] success increase board num :'+JSON.stringify(res.rows[0]));
+			}
+		});
+	});
+}
 function calculatecodeSize(cb){
 	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);

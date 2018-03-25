@@ -1,4 +1,42 @@
-<nav class="container align-content-center " style="float: right; align-content: right; width: 24%; height: 1500px;background-color: #f7f7f7">
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.ajax({
+                type : "GET",
+                url : "/visitCounter",
+                dataType : "JSON",
+                success : function(data){
+                    var countString = String(data.visit);
+                    var numbers = new Array();
+                    if(countString.length > 5){
+                        var i = countString.length - 5;
+                        for(var j = 0 ; j < 5 ; j++){
+                            numbers[j]=countString[i+j];
+                        }
+                    }else{
+                        var i = 5 - countString.length;
+                        for(var j = 0 ; j < i ; j++){
+                            numbers[j]='0';
+                        }
+                        var h = 0 ;
+                        for(var j = i ;j<5;j++){
+                            numbers[j]=countString[h++];
+                        }
+                    }
+    
+                    for(var i = 0 ; i < 5 ; i++){
+                        $('#counter'+(i+1)+'A').attr("srcset","public/number/number"+numbers[i]+".png");    
+                        $('#counter'+(i+1)+'B').attr("src","public/number/th_number"+numbers[i]+".png");    
+                    }                
+                },
+                error : function(){
+                    console.log('req counter failed');
+                }
+            });
+
+
+    });
+</script>
+<nav class="container align-content-center " style="float: right; align-content: right; width: 24%; height:6em; auto;background-color: #f7f7f7" id="rightNav">
 <!-- right nav -->
     <div class="align-content-center row ">
         <div class="col-auto" style="text-align: center">

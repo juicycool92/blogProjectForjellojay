@@ -43,13 +43,15 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
 							if(err3){
 								cb(err3,null);
 							}else{
+                                blogModule.countSelectPost(reqBoardNum);
 								cb(null,jsonResult);
 							}
 						});
 					}
 				});
 			}
-		})
+        })
+        
     }
     function getListFromCode(reqBoardNum,reqBoardType,cb){
         codeModule.callSelectedPost(reqBoardNum,(err,result)=>{
@@ -64,6 +66,7 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
 							if(err3){
 								cb(err3,null);
 							}else{
+                                codeModule.countSelectPost(reqBoardNum);
 								cb(null,jsonResult);
 							}
 						});
