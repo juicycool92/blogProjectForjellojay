@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+
+<script type="text/javascript">
+    var globalVar;
+    function clickPost(boardNum){
+    	location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=code';
+    }
+
+$(document).ready(function(){
+	var i = 0;
+	
+	var test = JSON.parse('<%-JSON.stringify(content)%>');
+    globalVar = test;
+
+    if('<%- boardSize %>'==0){  //포스트가없을때. 예외처리용!
+        $('#list0').show();
+        $('#listId0').attr('colspan',4);
+        $('#listId0').css("text-align", "center"); 
+		$('#listId0').text('no post yet');
+    }else{
+        while(test.length !== i){
+	    	$('#list'+i).show();
+    		$('#listId'+i).text(test[i].num);
+		    $('#categoryId'+i).text(test[i].category1+'/'+test[i].category2);
+		    $('#titleId'+i).text(test[i].title);
+		    $('#dateId'+i).text($.format.date((new Date(test[i++].date)), "yy년 M월 d일"));  
+	    }
+    }
+	
+    
+    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/leftover.png" style="position: relative"></a></li>');
+    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/left.png" style="position: relative"></a></li>');
+    
+	for(var j = 0 ; j < <%=pageSize%> ; j++){
+		if(j===<%=curPage%>){
+			$('#pagenationUL').append('<li class="active" style="float:left;display:table-cell"><a href=#>'+(<%=curPage%>+1)+'</a></li>');
+		}else{
+			$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page='+j+'\">'+(j+1)+'</a></li>')	
+		}
+	}
+	
+	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
+	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=<%=pageSize-1%>\" style="padding: 1px"><img src="../public/arrow/rightover.png" style="position: relative"></a></li>');
+
+    
+});
+
+</script>
+
+
+<nav class="container align-content-center" style="float: left; align-content: left; width: 75%; background-color: #ffffff;margin-right: 1%">
+
+    <div id="blogListDiv" class="container align-content-center" style="align-content: center; width: 85%">
+     <table class="table table-hover">
+         <thead>
+            <tr>
+                <th>No</th>
+                <th> category</th>
+                <th>Title</th>
+                <th>Date</th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr style="display:none" id='list0' onclick="clickPost(0)">
+                <th id="listId0"></th>
+                <th id="categoryId0"></th>
+                <th><a id="titleId0"></a></th>
+                <th id="dateId0"></th>
+            </tr>
+            <tr style="display:none" id='list1' onclick="clickPost(1)">
+                <th id="listId1"></th>
+                <th id="categoryId1"></th>
+                <th><a id="titleId1"></a></th>
+                <th id="dateId1"></th>
+            </tr>
+            <tr style="display:none" id='list2' onclick="clickPost(2)">
+                <th id="listId2"></th>
+                <th id="categoryId2"></th>
+                <th><a id="titleId2"></a></th>
+                <th id="dateId2"></th>
+            </tr>
+            <tr style="display:none" id='list3' onclick="clickPost(3)">
+                <th id="listId3"></th>
+                <th id="categoryId3"></th>
+                <th><a id="titleId3"></a></th>
+                <th id="dateId3"></th>
+            </tr>
+            <tr style="display:none" id='list4' onclick="clickPost(4)">
+                <th id="listId4"></th>
+                <th id="categoryId4"></th>
+                <th><a id="titleId4"></a></th>
+                <th id="dateId4"></th>
+            </tr>
+            <tr style="display:none" id='list5' onclick="clickPost(5)">
+                <th id="listId5"></th>
+                <th id="categoryId5"></th>
+                <th><a id="titleId5"></a></th>
+                <th id="dateId5"></th>
+            </tr>
+            <tr style="display:none" id='list6' onclick="clickPost(6)">
+                <th id="listId6"></th>
+                <th id="categoryId6"></th>
+                <th><a id="titleId6"></a></th>
+                <th id="dateId6"></th>
+            </tr>
+            <tr style="display:none" id='list7' onclick="clickPost(7)">
+                <th id="listId7"></th>
+                <th id="categoryId7"></th>
+                <th><a id="titleId7"></a></th>
+                <th id="dateId7"></th>
+            </tr>
+            <tr style="display:none" id='list8' onclick="clickPost(8)">
+                <th id="listId8"></th>
+                <th id="categoryId8"></th>
+                <th><a id="titleId8"></a></th>
+                <th id="dateId8"></th>
+            </tr>
+            <tr style="display:none" id='list9' onclick="clickPost(9)">
+                <th id="listId9"></th>
+                <th id="categoryId9"></th>
+                <th><a id="titleId9"></a></th>
+                <th id="dateId9"></th>
+            </tr>
+         </tbody>
+     </table>
+        <div class="container" align="center" style="width: fit-content;height: auto">
+            <ul class="pagination"  id="pagenationUL" style="display:table"></ul>
+        </div>
+    </div>
+
+</nav>
+
+<% include rightnavbar %>
+
+<nav class="container align-content-center" style="float: right; text-align: center; width: 100%; height: 200px;background-color: #9fcdff">
+    <!-- footer -->
+footer
+</nav>
+<%include footer%>	
+</body>
+
+</html>

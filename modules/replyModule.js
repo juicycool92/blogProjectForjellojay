@@ -49,7 +49,7 @@ module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
 				return;
 			}
 		}
-		client.query('insert into '+tableName+' (r'+reqArray.postType+'parent,r'+reqArray.postType+'date,r'+reqArray.postType+'name,r'+reqArray.postType+'mail,r'+reqArray.postType+'password,r'+reqArray.postType+'context) values( $1 ,Now(),$2,$3,$4,$5)  returning r'+reqArray.postType+'parent as num;',[reqArray.postNum,reqArray.name,reqArray.mail,reqArray.pw,reqArray.context],(err,res)=>{
+		client.query('insert into '+tableName+' (r'+reqArray.postType+'parent,r'+reqArray.postType+'date,r'+reqArray.postType+'name,r'+reqArray.postType+'mail,r'+reqArray.postType+'password,r'+reqArray.postType+'context) values( $1 ,Now() AT TIME ZONE \'Asia/Seoul\',$2,$3,$4,$5)  returning r'+reqArray.postType+'parent as num;',[reqArray.postNum,reqArray.name,reqArray.mail,reqArray.pw,reqArray.context],(err,res)=>{
 			done();
 			if(err || !res.rows[0] ){
 				console.log(err.stack);

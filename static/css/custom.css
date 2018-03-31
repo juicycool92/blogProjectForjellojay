@@ -1,0 +1,44 @@
+.lesspadding{
+    padding: 1rem;
+}
+.lesspadding-left{
+
+    padding: 0rem;
+    padding-left: 1rem;
+}
+.lesspadding-right{
+    padding: 0rem;
+    padding-right: 1rem;  
+}
+.lesspadding-right-mainnav{
+    padding: 0rem;
+    
+    padding-right: 1rem;  
+    background-clip: content-box;
+    background-color: #ffffff;
+}
+.lesspadding-top-footer{
+    padding: 0rem;
+    padding-top: 0.5rem;
+    background-clip: content-box;
+    background-color: #9fcdff
+}
+.nopadding{
+    padding: 0rem;
+}
+.nopadding-left{
+    padding-left:0rem;
+}
+.nopadding-left-card{
+    padding-right: 0.1rem;
+    padding-left:0rem;
+}
+.margin-maindiv{
+    margin-left:0.5rem;
+    margin-right:0.5rem;
+}
+
+.col-centered{
+    text-align: center;
+    display: inline-block;
+}
