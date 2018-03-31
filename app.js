@@ -35,6 +35,7 @@ app.use((req,res,next)=>{
 
     var today = new Date();
     //var logStr;
+    //today = today.setMilliseconds(0,0);
     today = today.setMinutes(0,0,0);
     if(!req.session.lastVisit | req.session.lastVisit != today){
         req.session.lastVisit = today;
@@ -83,7 +84,6 @@ var reply = require('./routes/reply.js')(app,replyModule,jsonCreator);
 
 function writeLog(logStr,cb){
     fs.appendFile('log.txt',logStr,(err)=>{
-        console.log('??');
         if(err){
             cb(err);
         }else{

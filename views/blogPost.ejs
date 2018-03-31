@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <% include header %>
-<body class="container align-content-center" style="background-color: #ebe7e7">
-<%include navbar %>
 <style>
 .button {
     background-color: #4CAF50;
@@ -21,25 +19,19 @@
     var globalVar;
     var curPostType;
 
-    function submitReply() {
-        console.log('hi');
-    }
+    
     function writeReply(replyArr){
-        $('#replyTable tbody').empty();
+        $('#replyTable').empty();
         for(var i = 0 ;  i < replyArr.length ; i ++){
             console.log('loop'+i);
             var tmp = '<tr><th id="replyId'+i+'"></th><th id="replyContext'+i+'"></th><th id="replyDate'+i+'"></th></tr>';
             $('#replyTable').append(tmp);
             $('#replyId'+i).text(replyArr[i].rname);
             $('#replyContext'+i).append(replyArr[i].rcontext);
-            $('#replyDate'+i).text($.format.date((new Date(replyArr[i].rdate)), "yyyy/M/d HH:mm:ss"));
-            $('#replyDate'+i).append('<img src="public/deleteImg.png" onclick="deleteReply(\''+replyArr[i].rnum+'\')">');
+            var tDate = new Date(replyArr[i].rdate);
+            $('#replyDate'+i).text(tDate.getFullYear()+"년 "+(tDate.getMonth()+1)+"월 "+tDate.getDate()+"일 "+tDate.getHours()+":"+tDate.getMinutes());
+            $('#replyDate'+i).append('<img src="public/deleteImg.png"  data-toggle="modal" data-target="#exampleModal" data-replynum="'+replyArr[i].rnum+'">');
         }
-    }
-    function deleteReply(reqReplyNum){
-        //alert(reqReplyNum);
-        $('#modalReplyNum').val(reqReplyNum);
-        $('#terms-of-service').modal().open();
     }
     $(document).ready(function(){
 
@@ -48,7 +40,8 @@
         $('#postCategory').append('<%=category1%>/<%=category2%>');
         var datee = '<%=date%>';
         console.log(datee);
-        $('#postDate').append($.format.date((new Date(datee)), "yyyy년 M월 d일\n hh시 mm분"));
+        var tDate = new Date(datee);
+        $('#postDate').text(tDate.getFullYear()+"년 "+(tDate.getMonth()+1)+"월 "+tDate.getDate()+"일 "+tDate.getHours()+":"+tDate.getMinutes());
         $('#postContext').append('<%-context%>');
         if('<%=prevTitle%>'){
             $('#prevLink').attr('href','/readPost?reqBoardNum=<%=prevNum%>&reqBoardType='+curPostType)
@@ -77,14 +70,14 @@
             }
         });
         $('#submitReply').on('click',function(){
-            if(!($('#inputName').val() && $('#inputPasswd').val() && $('#inputContext').val())){
+            if(!($('#replyInput-Name').val() && $('#replyInput-Passwd').val() && $('#replyCommentText').val())){
                 alert('필수입력란이 공백입니다');
             }else {
                 var num = '<%= num %>';
-                var name = $('#inputName').val();
-                var passwd = $('#inputPasswd').val();
-                var email = $('#inputMail').val();
-                var context = $('#inputContext').val().replace(/\n/g, "<br/>");
+                var name = $('#replyInput-Name').val();
+                var passwd = $('#replyInput-Passwd').val();
+                var email = $('#replyInput-Mail').val();
+                var context = $('#replyCommentText').val().replace(/\n/g, "<br/>");
                 var sendjsonSting = {"postType":curPostType,"postNum": num, "name": name, "pw": passwd, "mail": email, "context": context};
                 console.log(JSON.stringify(sendjsonSting));
                 $(function () {
@@ -121,7 +114,12 @@
                     dataType: "json",
                     success: function (data3) {
                         console.log('success');
-                        $('#terms-of-service').modal().close();
+                        try{
+                            $('#modalClose').trigger('click');
+                        }catch(e){
+                            console.log(e);
+                        }
+                        
                         writeReply(JSON.parse(data3).reply);
                     },
                     error: function () {
@@ -134,136 +132,170 @@
         $('#modalBtnCancle').on('click',function(){
             $('#terms-of-service').modal().close();
         });
-
+        $('#exampleModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var modal = $(this);
+            var test = button.data('replynum');
+            $(this).addClass('clickable');
+            console.log('야');
+            modal.find('#modalReplyNum').val(test);
+        });
+        console.log('guns ready');
     });
+    /*
     var leftDiv = document.getElementById('mainNav').style;
         document.getElementById('rightNav').style.height = leftDiv;
         console.log(leftDiv);
-
+*/
 </script>
 
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+<div class="row">
+    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
+        <div class="row align-content-center margin-maindiv">
+           <!-- main content start inside of this line --> 
+            <div class="row col-12 align-content-center margin-maindiv">
+                <div class="col-12 text-center title-style" id="postTitle"></div>
 
-<nav class="container align-content-center table-responsive" style="float: left; align-content: left; width: 75%; background-color: #ffffff;margin-right: 1%" id="mainNav">
-<div class="container align-content-center row table-responsive "style="display: table">
-    <table class="table">
-        <tr>
-            <th scope="col" colspan="2" style="text-align: center"><h1 id="postTitle"></h1></th>
-        </tr>
-        <tr>
-            <th class="text-left" id="postCategory" style="width:70%"><b style="font-size: large;">Category</b><br></th>
-            <th class="text-right" id="postDate" style="width:70%"><b style="font-size: large;">Date</b><br></th>
-        </tr>
-        <tr>
-            <th colspan="2">
-                <p id="postContext"></p>
-            </th>
-        </tr>
-        <tr>
-            <th class="text-left">
-                <a href="#" id="prevLink">
-                Prev
-                <p id="prevTitle"></p>
-                </a>
-            </th>
-            <th class="text-right">
-                <a href="#" id="nextLink">
-                Next
-                <p id="nextTitle">
-                </p>
-                </a>
-            </th>
-        </tr>
-    </table>
-    
-    <div class="align-content-center replyDiv " style="display: table-row;" align="center" id="replyDiv">
+            </div>
+            <div class="row col-12 align-content-center margin-maindiv">
+                    <div class="col-6 text-left"  id="postCategory">
+                    </div>
+                    <div class="col-6 text-right" id="postDate">
+                    </div>
+            </div>
+            <div class="row col-12 align-content-center margin-heavy-context"  id="postContext">
 
-        <table class="replyTable table" style="width: auto !important">
-            <tr>
-                <th rowspan="2" id="replyTag">
-                    Reply
-                </th>
-                <th id="replyTexts">
-                    Name
-                </th>
-                <th id="replyTexts">
-                    Password *
-                </th>
-                <th id="replyTexts">
-                    Mail
-                </th>
-            </tr>
-            <tr>
-                <th id="replyInput-Name">
-                    <input type="text" class="form-control" size="14">
-                </th>
-                <th id="replyInput-Passwd">
-                    <input type="password" class="form-control" size="10">
-                </th>
-                <th id="replyInput-Mail">
-                    <input type="email" class="form-control" size="20">
-                </th>
-            </tr>
-        </table>
-    </div>
-    <br>
-    <div id="replyCommentDiv" class="align-content-center container" align="center">
-        <table class="replyTable table" style="width: auto !important">
-            <tr>
-                <th id="replyCommentTextDiv">
-                        <textarea id="replyCommentText" cols="60"></textarea>
-                </th>
-                <th id="replyCommentBtnDiv">
-                        <button id="replyCommentBtn" class=".button">hello</button>
-                </th>
-            </tr>
-        </table>
+            </div>
+            <div class="row col-12 align-content-center margin-maindiv">
+                    <table class="table">
+                        <tr>
+                            <th class="text-left">
+                                <a href="#" id="prevLink">
+                                    Prev
+                                    <p id="prevTitle"></p>
+                                </a>
+                            </th>
+                            <th class="text-right">
+                                <a href="#" id="nextLink">
+                                    Next
+                                    <p id="nextTitle"></p>
+                                </a>
+                            </th>
+                        </tr>
+                    </table>
+            </div>
+            <div class="row col-12"></div>
+            <div class="row col-12  align-content-center margin-maindiv">
+                <!-- this is writeReply index-->
+                <div class="col-10  offset-1" id="replyDiv">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-12">
+                            <table>
+                                <tr>
+                                    <th>
+                                        Name*
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input class="form-control" type="text" id="replyInput-Name"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <table>
+                                <tr>
+                                    <th>
+                                        Password*
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input class="form-control" type="password" id="replyInput-Passwd"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <table>
+                                <tr>
+                                    <th>
+                                        Email
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input class="form-control" type="email" id="replyInput-Mail"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row replyDiv" style="margin-top:1rem;">
 
-    </div>
-    <br><br>
-    <div style="width: 70%;height: fit-content;display:table-row" align="center" class="col align-content-center">
-        <table class="table" border="1" style="width: 90%" align="center" id="replyTable">
-            <thead>
-                <tr>
-                    <th style="width: auto;max-width: 20%; height: 2em" >Name</th>
-                    <th style="width: auto;max-width: 50%">Context</th>
-                    <th style="width: auto;max-width: 15%">Date</th>
-                </tr>
-            </thead>
-            <tr></tr>
-        </table>
-    </div>
-</div>
+                        <div class="col-lg-10 col-md-8" style="padding-right:0.5rem;">
+                            <textarea id="replyCommentText" class="form-control col-12"></textarea>
+                        </div>
+                        <div class="col-lg-2 col-md-4" style="padding:0rem;padding-right:1.5rem;">
+                            <button id="submitReply" class="btn btn-block" style="height:100%;">Submit</button>
+                        </div>
 
-
-    <div class="modal" tabindex="-1" role="dialog" id="terms-of-service">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Reply</h5>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p>Require Password</p>
-                    <input type="password" id="modalInputPwd">
-                    <input type="text" hidden="hidden" id="modalReplyNum">
+            </div>
+            <div class="row  col-12  align-content-center margin-maindiv">
+                <div class="col-10  offset-1">
+                    <table class="table" align="center" id="replyTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Context</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                    </table>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="modalBtnDelete">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="modalBtnCancle">Calcle</button>
-                </div>
+            </div>
+        </div>        
+    </nav>
+    <% include rightnavbar %>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">Delete Reply</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <th>
+                            Insert Password for Delete Reply
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input type="password" class="form-control" id="modalInputPwd">
+                            <input type="text"  id="modalReplyNum" hidden="hidden">
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary"  id="modalBtnDelete">Delete</button>
             </div>
         </div>
     </div>
+</div>
 
-
-</nav>
-<% include rightnavbar %>
-
-
-<nav class="container align-content-center" style="float: right; align-content: center; width: 100%; height: 200px;background-color: #9fcdff">
-    <!-- footer -->
-    footer
-</nav>
-
-</body>
-<%include footer%>
+<!--end-->
+</div>
+<%include footer%>	
 </html>

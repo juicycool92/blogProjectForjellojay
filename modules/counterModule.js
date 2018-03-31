@@ -29,10 +29,11 @@ module.exports.countIncrease = (date,cb)=>{
 		if(err) throw err;
 		client.query('select * from visitcounter where visitdate = $1;',[date],(err,res)=>{
 			done();
-			if(err){
-                //console.log(err.stack);
-                createDateRow(data,(err,result)=>{
+			if(err || !res.rows[0].visitcount){
+                console.log(err);
+                createDateRow(date,(err,result)=>{
                     if(err){
+						console.log(err.stack);
                         cb(err);
                     }else{
                         console.log('new table row createded, date is :'+result);
@@ -42,6 +43,7 @@ module.exports.countIncrease = (date,cb)=>{
 			}else{
 				increaseNum(date,(err,result)=>{
                     if(err){
+						console.log(err.stack);
                         cb('[countIncrease][increaseNum]sql error : '+err);
                     }else{
                         cb(null);
@@ -76,18 +78,14 @@ function createDateRow(data,cb){
 	});
 	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-		client.query('insert into visitcounter values(current_date) returning current_data;',(err,res)=>{
+		client.query('insert into visitcounter values(now() AT TIME ZONE \'Asia/Seoul\') returning now() AT TIME ZONE \'Asia/Seoul\' as curdate;',(err,res)=>{
 			done();
 			if(err){
 				console.log(err.stack);
 				cb(err,null);
 			}else{
-                console.log(res.date+'|'+date);
-                if(res.date === data){
-                    cb(null,res.data);
-                }else{
-                    cb('[counterModule][createDateCol]sql date and server date is missmatch',null);
-                }
+                cb(null,res.rows[0].curdate);
+                
 			}
 		});
 	});

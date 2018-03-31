@@ -42,3 +42,24 @@
     text-align: center;
     display: inline-block;
 }
+.margin-heavy-context{
+    margin:3rem;
+}
+.margin-heavy-topbottom{
+    margin-top:3rem;
+    margin-bottom:3rem;
+}
+.title-style{
+    font-size: 2em;
+    font-family: 'Times New Roman', Times, serif;
+}
+.clickable {
+    cursor: pointer;
+}
+
+
+.modal-backdrop {
+    z-index: -1;
+  }
+  
+  
