@@ -18,4 +18,7 @@ module.exports = (app,counterModule)=>
 			}
 		});
 	});
+	app.get('/test',(req,res)=>{
+	    res.render('editPage');
+	});
 }

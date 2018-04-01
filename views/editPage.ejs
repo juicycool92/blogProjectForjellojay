@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+
+<script src="trumbowyg/dist/trumbowyg.min.js"></script>
+<link rel="stylesheet" href="trumbowyg/dist/ui/trumbowyg.min.css">
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        $('#editor').trumbowyg();
+        console.log('hello');
+    });
+</script>
+
+<div class="row">
+    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
+        <div class="row align-content-center margin-maindiv">
+           <!-- main content start inside of this line --> 
+            <div class="col-12" id="editor">
+            </div>
+
+        </div>        
+    </nav>
+    <% include rightnavbar %>
+</div>
+<script src="trumbowyg/dist/trumbowyg.js"></script>
+<%include footer%>	
+</html>
