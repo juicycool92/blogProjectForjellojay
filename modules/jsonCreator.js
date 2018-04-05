@@ -125,3 +125,46 @@ module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{
 		cb(null,jsonString);
 	}
 }
+module.exports.sortCategoryies = (rawString,cb)=>{
+	if(rawString.length==0 || !rawString){
+		cb('err? no row found, returning NULL','{"cat1":"[]","cat2":"[]"}');
+	}else{
+		var jsonString = '{';
+		var jsonCat1 = new String('"cat1":['), jsonCat2 = new String('"cat2":[');
+		for(let i = 0; i < rawString.length-1 ; i ++){
+			if(rawString[i].cat1){
+				console.log('cat1 length :'+jsonCat1.length);
+				if(jsonCat1.length == 8 ){
+					jsonCat1 += '"' + rawString[i].cat1 +'"';
+				}else{
+					jsonCat1 += ',"' + rawString[i].cat1 +'"';	
+				}
+			}
+				
+			if(rawString[i].cat2){
+				console.log('cat2 length :'+jsonCat2.length);
+				if(jsonCat2.length == 8 ){
+					jsonCat2 += '"' + rawString[i].cat2 +'"';
+				}else{
+					jsonCat2 += ',"' + rawString[i].cat2 +'"';
+				}
+			}
+				
+		}
+		if(jsonCat1.length == 8 ){
+			jsonCat1 += '"' + rawString[rawString.length-1].cat1+'"'  ;
+		}else{
+			if(rawString[rawString.length-1].cat1)
+				jsonCat1 += ',"' + rawString[rawString.length-1].cat1+'"'  ;
+		}
+		if(jsonCat2.length == 8 ){
+			jsonCat2 += '"' + rawString[rawString.length-1].cat2+'"';
+		}else{
+			if(rawString[rawString.length-1].cat2)
+				jsonCat2 += ',"' + rawString[rawString.length-1].cat2+'"';
+		}
+		jsonString += jsonCat1 +'],'+ jsonCat2 +']}';
+		console.log('baked jsonString is : \n'+jsonString);
+		cb(null,jsonString);
+	}
+}

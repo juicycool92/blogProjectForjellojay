@@ -8,18 +8,182 @@
 <link rel="stylesheet" href="trumbowyg/dist/ui/trumbowyg.min.css">
 
 <script type="text/javascript">
+function test(option){
+    if(option.id !== 'selMain'){
+        if(option.options[option.selectedIndex].value === 'addSub'){
+            console.log('hello '+option.id);
+            document.getElementById("input"+option.id).setAttribute("hidden","");
+            $('#'+option.id).text('hello');
+        }
+    }
+    console.log(option.id);
+    console.log(option.options[option.selectedIndex].value);
+}
     $(document).ready(function(){
 
         $('#editor').trumbowyg();
-        console.log('hello');
+        
+        
+
+
+        /*서브메뉴를 새로추가할때 추가되는 input*/
+        $('#selMain' ).change(function(){
+            var selPostType = $('#selMain option:selected').val();
+            $.ajax({    //not create router yet
+                type : 'post',
+                url : '/loadSubCateAll', /*0 is blog , 1 is code*/
+                data : {
+                    'postType' : selPostType
+                },
+                dataType : 'JSON', /*
+                                    {
+	                                    "Cat1": [
+                                                    "test1", "test2"
+                                        ],
+	                                    "Cat2": [
+                                                    "test3", "test4"
+                                        ]
+                                    }
+                                    selSub1,selSub2 option
+                                    */
+                success : function(data){
+                    let jsonData = JSON.parse(data);
+                    console.log(jsonData);
+                    if(jsonData.cat1.length !== 0){
+                        for(var i = 0 ; i < jsonData.cat1.length ; i++){
+                            $('#selSub1').append('<option>'+jsonData.cat1[i]+'</option>');
+                        }
+                    }if(jsonData.cat2.length !== 0){
+                        for(var i = 0 ; i < jsonData.cat2.length ; i++){
+                            $('#selSub2').append('<option>'+jsonData.cat2[i]+'</option>');
+                        }
+                    }
+                },
+                statusCode : {
+                    201 : function(){
+                        console.log('status code 201 success');
+                    },
+                    400 : function(){
+                        console.log('status 400 unsolved err');
+                    }
+                },
+                error : function(request,status,error){
+                    console.log('AJAX failed : appendPost  ');
+                    alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                }
+            });
+        });
+        $('#selSub1' ).change(function(){
+            var sub = this;
+            if(sub.options[sub.selectedIndex].value === 'addSub'){
+                $('#selDiv1').append('<input type="text" class="form-control" id="inputselSub1"/>');
+            }else{
+                if($('#inputselSub1').length)
+                    $('#inputselSub1').remove();
+            }
+        });
+        $('#selSub2' ).change(function(){
+            var sub = this;
+            if(sub.options[sub.selectedIndex].value === 'addSub'){
+                $('#selDiv2').append('<input type="text" class="form-control" id="inputselSub2"/>');
+            }else{
+                if($('#inputselSub2').length)
+                    $('#inputselSub2').remove();
+            }
+        });
+        $('#uploadPost').click(function(){
+            let mainCategory = $('#selMain option:selected').text();
+            let subCategory1;
+            let subCategory2;
+            let contextText = $('#editor').html();
+            if($('#selSub1 option:selected').val()==='addSub')
+                subCategory1 = $('#inputselSub1').val();
+            else
+                subCategory1 = $('#selSub1 option:selected').val();
+            if($('#selSub2 option:selected').val()==='addSub')
+                subCategory2 = $('#inputselSub2').val();
+            else
+                subCategory2 = $('#selSub2 option:selected').val();
+            
+            console.log(mainCategory);
+            console.log(subCategory1);
+            console.log(subCategory2);
+            console.log(contextText);
+            
+            $.ajax({        //not made router yet
+            type : 'post',
+            url : '/appendPost',
+            data: {
+                'mainCategory'  : mainCategory,
+                'subCategory1'  : subCategory1,
+                'subCategory2'  : subCategory2,
+                'contextText'   : contextText 
+            },
+            dataType : 'json',
+            success : function(data){
+                console.log('success');
+            },
+            statusCode : {
+                201 : function(){
+                    console.log('status code 201 success');
+                },
+                400 : function(){
+                    console.log('status 400 unsolved err');
+                }
+            },
+            error : function(request,status,error){
+                console.log('AJAX failed : appendPost  ');
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+            }
+        });
+
+        })
+        /*서브메뉴를 새로추가할때 추가되는 input 종료*/
+
     });
 </script>
 
 <div class="row">
     <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
         <div class="row align-content-center margin-maindiv">
-           <!-- main content start inside of this line --> 
-            <div class="col-12" id="editor">
+            <!-- main content start inside of this line --> 
+            
+            <div class="row col-12">
+            
+                    <!-- insert category main -->
+                    <!-- insert category sub -->
+                    <!-- ajax on load시 category를 가져올것-->
+                    <div class="row col-12">
+                        <div class="col-lg-4 col-md-12 form-group">  
+                            <label for="sel1">Main Category*</label>
+                            <select class="form-control form-height-3" id="selMain">
+                                <option value="NULL" selected>Choose</option>
+                                <option value="0">Blog</option>
+                                <option value="1">Code</option>
+                            </select>
+                            
+                        </div>                                
+                    
+                        <div class="col-lg-4 col-md-12 form-group"id="selDiv1">
+                            <label for="sel1">Sub1 Category*</label>
+                            <select class="form-control form-height-3" id="selSub1">
+                                <option value="NULL" selected>Choose</option>
+                                <option value="addSub">Add new..</option>
+                            </select>                             
+                        </div>
+                        <div class="col-lg-4 col-md-12 form-group" id="selDiv2">
+                            <label for="sel1">Sub2 Category*</label>
+                            <select class="form-control form-height-3" id="selSub2">
+                                <option value="NULL" selected>Choose</option>
+                                <option value="addSub">Add new..</option>
+                            </select>
+                        </div>
+                
+            </div>
+            <div class="row col-12" id="editor">
+            </div>
+            <div class="row col-12 align-content-center testcls">
+                <button id="uploadPost" class="form-control">submit</button>
             </div>
 
         </div>        

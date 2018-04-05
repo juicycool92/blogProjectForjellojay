@@ -61,5 +61,7 @@
 .modal-backdrop {
     z-index: -1;
   }
-  
+.form-height-3{
+    height: 3rem !important;
+}
   

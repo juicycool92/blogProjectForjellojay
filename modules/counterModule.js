@@ -29,7 +29,7 @@ module.exports.countIncrease = (date,cb)=>{
 		if(err) throw err;
 		client.query('select * from visitcounter where visitdate = $1;',[date],(err,res)=>{
 			done();
-			if(err || !res.rows[0].visitcount){
+			if(err || !res.rows[0]){
                 console.log(err);
                 createDateRow(date,(err,result)=>{
                     if(err){
