@@ -93,17 +93,14 @@ function test(option){
         });
         $('#uploadPost').click(function(){
             let mainCategory = $('#selMain option:selected').text();
-            let subCategory1;
-            let subCategory2;
+            let subCategory1 = $('#selSub1 option:selected').val();
+            let subCategory2 = $('#selSub2 option:selected').val();
             let contextText = $('#editor').html();
+            let title =  $('#title').val();
             if($('#selSub1 option:selected').val()==='addSub')
                 subCategory1 = $('#inputselSub1').val();
-            else
-                subCategory1 = $('#selSub1 option:selected').val();
             if($('#selSub2 option:selected').val()==='addSub')
                 subCategory2 = $('#inputselSub2').val();
-            else
-                subCategory2 = $('#selSub2 option:selected').val();
             
             console.log(mainCategory);
             console.log(subCategory1);
@@ -117,11 +114,13 @@ function test(option){
                 'mainCategory'  : mainCategory,
                 'subCategory1'  : subCategory1,
                 'subCategory2'  : subCategory2,
-                'contextText'   : contextText 
+                'contextText'   : contextText,
+                'title'         : title
             },
-            dataType : 'json',
             success : function(data){
                 console.log('success');
+                alert('Post upload Successfuly');
+                window.history.back();
             },
             statusCode : {
                 201 : function(){
@@ -153,33 +152,39 @@ function test(option){
                     <!-- insert category main -->
                     <!-- insert category sub -->
                     <!-- ajax on load시 category를 가져올것-->
-                    <div class="row col-12">
-                        <div class="col-lg-4 col-md-12 form-group">  
-                            <label for="sel1">Main Category*</label>
-                            <select class="form-control form-height-3" id="selMain">
-                                <option value="NULL" selected>Choose</option>
-                                <option value="0">Blog</option>
-                                <option value="1">Code</option>
-                            </select>
-                            
-                        </div>                                
-                    
-                        <div class="col-lg-4 col-md-12 form-group"id="selDiv1">
-                            <label for="sel1">Sub1 Category*</label>
-                            <select class="form-control form-height-3" id="selSub1">
-                                <option value="NULL" selected>Choose</option>
-                                <option value="addSub">Add new..</option>
-                            </select>                             
-                        </div>
-                        <div class="col-lg-4 col-md-12 form-group" id="selDiv2">
-                            <label for="sel1">Sub2 Category*</label>
-                            <select class="form-control form-height-3" id="selSub2">
-                                <option value="NULL" selected>Choose</option>
-                                <option value="addSub">Add new..</option>
-                            </select>
-                        </div>
-                
-            </div>
+                <div class="row col-12">
+                    <div class="col-lg-4 col-md-12 form-group">  
+                        <label for="sel1">Main Category*</label>
+                        <select class="form-control form-height-3" id="selMain">
+                            <option value="NULL" selected>Choose</option>
+                            <option value="0">Blog</option>
+                            <option value="1">Code</option>
+                        </select>
+                    </div>                                
+                    <div class="col-lg-4 col-md-12 form-group"id="selDiv1">
+                        <label for="sel1">Sub1 Category*</label>
+                        <select class="form-control form-height-3" id="selSub1">
+                            <option value="NULL" selected>Choose</option>
+                            <option value="addSub">Add new..</option>
+                        </select>                             
+                    </div>
+                    <div class="col-lg-4 col-md-12 form-group" id="selDiv2">
+                        <label for="sel1">Sub2 Category*</label>
+                        <select class="form-control form-height-3" id="selSub2">
+                            <option value="NULL" selected>Choose</option>
+                            <option value="addSub">Add new..</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row col-12">
+                    <div class="offset-lg-1 col-lg-10 col-12">
+                        <label>Title*</label>
+                    </div>
+                    <div class="offset-lg-1 col-lg-10 col-12">
+                        <input type="text" class="form-control" id="title"/>
+                    </div>
+                </div>
+            
             <div class="row col-12" id="editor">
             </div>
             <div class="row col-12 align-content-center testcls">

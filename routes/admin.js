@@ -18,7 +18,7 @@ module.exports = (app,mainModule,jsonCreator)=>{
             res.send();
         });
     });
-    
+
     app.post('/appendPost',(req,res)=>{
         
         var mainCategory = req.body.mainCategory;
@@ -29,5 +29,14 @@ module.exports = (app,mainModule,jsonCreator)=>{
         console.log(subCategory1);
         console.log(subCategory2);
         console.log(contextText);
+        mainModule.appendNewPost(req.body,(err)=>{
+            if(err){
+                console.log('[admin.js][/appendPost][ERR]'+err);
+                res.status(401);
+            }else{
+                res.status(201);
+            }
+            res.send();
+        });
     });
 }
