@@ -18,7 +18,8 @@
 <script type="text/javascript">
     var globalVar;
     var curPostType;
-
+    var curPostNum;
+    
     
     function writeReply(replyArr){
         $('#replyTable').empty();
@@ -35,45 +36,62 @@
     }
     $(document).ready(function(){
 
-        curPostType = '<%=boardType%>';
-        $('#postTitle').append('<%-title%>');
-        $('#postCategory').append('<%=category1%>/<%=category2%>');
-        var datee = '<%=date%>';
-        console.log(datee);
-        var tDate = new Date(datee);
-        $('#postDate').text(tDate.getFullYear()+"년 "+(tDate.getMonth()+1)+"월 "+tDate.getDate()+"일 "+tDate.getHours()+":"+tDate.getMinutes());
-        $('#postContext').append('<%-context%>');
-        if('<%=prevTitle%>'){
-            $('#prevLink').attr('href','/readPost?reqBoardNum=<%=prevNum%>&reqBoardType='+curPostType)
-            $('#prevTitle').text('<%=prevTitle%>');
-        }
-        if('<%=nextTitle%>'){
-            $('#nextLink').attr('href','/readPost?reqBoardNum=<%=nextNum%>&reqBoardType='+curPostType)
-            $('#nextTitle').text('<%=nextTitle%>');
-        }
-
+        curPostType = '<%=reqBoardType%>';
+        curPostNum = '<%=reqBoardNum%>';
+        var contextData;
         $.ajax({
-            type : "GET",
-            url : "/loadReply?reqBoardType="+curPostType+"&reqBoardNum=<%=num%>",
+            type : "post",
+            url : "/readPost",
+            data : {
+                    'reqBoardType'  : curPostType,
+                    'reqBoardNum'   : curPostNum
+                },
             dataType : "JSON",
             success : function(data){
-                var replyArr = JSON.parse(data).reply;
-                console.log(replyArr.length);
-                if(replyArr.length === 0){
-                    $('#replyTable').append('<tr><th colspan="3" style="text-align: center"> No Comment Yet</th></tr>');
-                }else{
-                    writeReply(replyArr);
+                contextData = JSON.parse(data);
+                console.log(contextData.num);
+                $('#postTitle').append(contextData.title);
+                $('#postCategory').append(contextData.category1 +'/'+contextData.category2);
+                let postDate = new Date(contextData.date);
+                $('#postDate').text(postDate.getFullYear()+"년 "+(postDate.getMonth()+1)+"월 "+postDate.getDate()+"일 "+postDate.getHours()+":"+postDate.getMinutes());
+                $('#postContext').html(contextData.context);
+                if(contextData.prevTitle){
+                    $('#prevLink').attr('href','/readPost?reqBoardNum='+contextData.prevNum+'&reqBoardType='+curPostType)
+                    $('#prevTitle').text(contextData.prevTitle);
                 }
+                if(contextData.nextTitle){
+                    $('#nextLink').attr('href','/readPost?reqBoardNum='+contextData.nextNum+'&reqBoardType='+curPostType)
+                    $('#nextTitle').text(contextData.nextTitle);
+                }
+                $.ajax({
+                    type : "GET",
+                    url : "/loadReply?reqBoardType="+curPostType+"&reqBoardNum="+contextData.num,
+                    dataType : "JSON",
+                    success : function(data){
+                        var replyArr = JSON.parse(data).reply;
+                        console.log(replyArr.length);
+                        if(replyArr.length === 0){
+                            $('#replyTable').append('<tr><th colspan="3" style="text-align: center"> No Comment Yet</th></tr>');
+                        }else{
+                            writeReply(replyArr);
+                        }
+                    },
+                    error : function(){
+                        console.log('req loadReply failed');
+                    }
+                });
             },
             error : function(){
-                console.log('req loadReply failed');
+                console.log('req readPost failed');
             }
         });
+        
         $('#submitReply').on('click',function(){
             if(!($('#replyInput-Name').val() && $('#replyInput-Passwd').val() && $('#replyCommentText').val())){
                 alert('필수입력란이 공백입니다');
+                console.log(contextData.num);
             }else {
-                var num = '<%= num %>';
+                var num = contextData.num;
                 var name = $('#replyInput-Name').val();
                 var passwd = $('#replyInput-Passwd').val();
                 var email = $('#replyInput-Mail').val();
@@ -103,7 +121,7 @@
             }
         });
         $('#modalBtnDelete').on('click',function(){
-            var sendjsonString = '{"postType":"'+curPostType+'","postNum":"<%-num%>","rNum":"'+$('#modalReplyNum').val()+'","rInPwd":"'+$('#modalInputPwd').val()+'"}';
+            var sendjsonString = '{"postType":"'+curPostType+'","postNum":"'+contextData.num+'","rNum":"'+$('#modalReplyNum').val()+'","rInPwd":"'+$('#modalInputPwd').val()+'"}';
             console.log(sendjsonString);
             $(function () {
                 $.ajax({

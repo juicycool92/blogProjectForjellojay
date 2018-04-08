@@ -63,9 +63,10 @@ module.exports.writeSinglePost = (raws,cb)=>{
 	if(!raws){
 		cb('[jsonCreator][writeSinglePost]raws are empty',null);
 	}else{
-		var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+(raws.context).replace(/"/g, '\\"')+'"}';
+		var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+'}';
+		console.log('[jsonCreator][writeSinglePost]debug : '+jsonString);
 		cb(null,jsonString);
-		//(raws.context).replace(/"/g, '\\"')
+		//JSON.stringify(raws.context)
 	}
 }
 module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{
@@ -75,19 +76,19 @@ module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{
 		var jsonString;
 		switch(raws2.length){
 			case 0 :{
-				jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+(raws.context).replace(/"/g, '\\"')+'","prevNum":"","prevTitle":"","nextNum":"","nextTitle":""}';	
+				jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+',"prevNum":"","prevTitle":"","nextNum":"","nextTitle":""}';	
 				break;
 			}
 			case 1: {
 				if(raws.num > raws2[0].num){//만일 한개의 게시물이 이전 게시물이면
-					jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+(raws.context).replace(/"/g, '\\"')+'","prevNum":"'+raws2[0].num+'","prevTitle":"'+raws2[0].title+'","nextNum":"","nextTitle":""}';					
+					jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+',"prevNum":"'+raws2[0].num+'","prevTitle":"'+raws2[0].title+'","nextNum":"","nextTitle":""}';					
 				}else{//만일 한개의 게시물이 다음 게시물이면
-					jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+(raws.context).replace(/"/g, '\\"')+'","prevNum":"","prevTitle":"","nextNum":"'+raws2[0].num+'","nextTitle":"'+raws2[0].title+'"}';
+					jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+',"prevNum":"","prevTitle":"","nextNum":"'+raws2[0].num+'","nextTitle":"'+raws2[0].title+'"}';
 				}
 				break;
 			}
 			case 2: {
-				jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+(raws.context).replace(/"/g, '\\"')+'","prevNum":"'+raws2[1].num+'","prevTitle":"'+raws2[1].title+'","nextNum":"'+raws2[0].num+'","nextTitle":"'+raws2[0].title+'"}';			
+				jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+',"prevNum":"'+raws2[1].num+'","prevTitle":"'+raws2[1].title+'","nextNum":"'+raws2[0].num+'","nextTitle":"'+raws2[0].title+'"}';			
 				break;
 			}
 			default :{
@@ -95,10 +96,10 @@ module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{
 				break;
 			}
 		}
-		
+		console.log('[jsonCreator][writeSinglePostandPN]'+jsonString);
 		cb(null,jsonString);
 	}
-	//	var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+(raws.context).replace(/"/g, '\\"')+'","prevNum":"'+raws[1].num+'","prevTitle":"'+raws[1].title+'","nextNum":"'+raws[0].num+'","nextTitle":"'+raws[1].title+'"}';
+	//	var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+JSON.stringify(raws.context)+'","prevNum":"'+raws[1].num+'","prevTitle":"'+raws[1].title+'","nextNum":"'+raws[0].num+'","nextTitle":"'+raws[1].title+'"}';
 	
 }
 module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{

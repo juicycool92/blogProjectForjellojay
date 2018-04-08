@@ -4,13 +4,18 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
 	{
         var reqBoardNum = req.query.reqBoardNum;
         var reqBoardType = req.query.reqBoardType;
+        res.render('../views/blogPost.ejs',{'reqBoardNum':reqBoardNum,'reqBoardType':reqBoardType});
+    });
+    app.post('/readPost',(req,res)=>{
+        var reqBoardNum = req.body.reqBoardNum;
+        var reqBoardType = req.body.reqBoardType;
         switch(reqBoardType){
             case 'blog' : {
                 getListFromBlog(reqBoardNum,reqBoardType,(err,jsonResult)=>{
                     if(err){
                         console.log('[blog.js][/readPost]err at getListfromBlog'+err);
                     }else{
-                        res.render('../views/blogPost.ejs',JSON.parse(jsonResult));
+                        res.json(jsonResult);
                         return;
                     }
                 });
@@ -21,15 +26,16 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
                     if(err){
                         console.log('[blog.js][/readPost]err at getListFromCode'+err);
                     }else{
-                        res.render('../views/blogPost.ejs',JSON.parse(jsonResult));
+                        res.json(JSON.parse(jsonResult));
                         return;
                     }
                 });
                 break;
             }
             default : {}
+            res.send();
         }
-    });
+    })
     function getListFromBlog(reqBoardNum,reqBoardType,cb){
         blogModule.callSelectedPost(reqBoardNum,(err,result)=>{
 			if(err){
