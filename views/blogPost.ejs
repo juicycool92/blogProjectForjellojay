@@ -53,7 +53,7 @@
                 $('#postTitle').append(contextData.title);
                 $('#postCategory').append(contextData.category1 +'/'+contextData.category2);
                 let postDate = new Date(contextData.date);
-                $('#postDate').text(postDate.getFullYear()+"년 "+(postDate.getMonth()+1)+"월 "+postDate.getDate()+"일 "+postDate.getHours()+":"+postDate.getMinutes());
+                $('#postDate').text(postDate.getUTCFullYear()+"년 "+(postDate.getUTCMonth()+1)+"월 "+postDate.getUTCDate()+"일 "+postDate.getUTCHours()+":"+postDate.getUTCMinutes());
                 $('#postContext').html(contextData.context);
                 if(contextData.prevTitle){
                     $('#prevLink').attr('href','/readPost?reqBoardNum='+contextData.prevNum+'&reqBoardType='+curPostType)
@@ -170,7 +170,7 @@
 <body class="container align-content-center" style="background-color: #ebe7e7">
 <%include navbar %>
 <div class="row">
-    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
+    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " id="mainNav">
         <div class="row align-content-center margin-maindiv">
            <!-- main content start inside of this line --> 
             <div class="row col-12 align-content-center margin-maindiv">
@@ -183,8 +183,10 @@
                     <div class="col-6 text-right" id="postDate">
                     </div>
             </div>
-            <div class="row col-12 align-content-center margin-heavy-context"  id="postContext">
-
+            <div class="row col-12 align-content-center margin-maindiv lesspadding-top">
+                <div class="col-12 text-left"><p><hr></p></div>
+                <div class="col-12 text-left lesspadding-postContext" id="postContext">
+                </div>
             </div>
             <div class="row col-12 align-content-center margin-maindiv">
                     <table class="table">

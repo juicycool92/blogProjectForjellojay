@@ -12,7 +12,8 @@
 $(document).ready(function(){
 	var i = 0;
 	
-	var test = JSON.parse('<%-JSON.stringify(content)%>');
+    var test = JSON.parse('<%-JSON.stringify(content)%>');
+    
 	globalVar = test;
     if('<%- boardSize %>'==0){  //포스트가없을때. 예외처리용!
         $('#list0').show();
@@ -26,7 +27,7 @@ $(document).ready(function(){
 		    $('#categoryId'+i).text(test[i].category1+'/'+test[i].category2);
             $('#titleId'+i).text(test[i].title);
             var tDate = new Date(test[i].date);
-            $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getMonth()+1)+"월 "+tDate.getDate()+"일 "+tDate.getHours()+":"+tDate.getMinutes());
+            $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
             i+=1;
 	    }
     }

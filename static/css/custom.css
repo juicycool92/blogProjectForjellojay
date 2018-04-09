@@ -10,12 +10,19 @@
     padding: 0rem;
     padding-right: 1rem;  
 }
+.lesspadding-postContext{
+    padding: 2rem;
+}
 .lesspadding-right-mainnav{
     padding: 0rem;
     
     padding-right: 1rem;  
     background-clip: content-box;
     background-color: #ffffff;
+}
+.lesspadding-top{
+    padding: 0em;
+    padding-top: 1rem;
 }
 .lesspadding-top-footer{
     padding: 0rem;
@@ -64,4 +71,5 @@
 .form-height-3{
     height: 3rem !important;
 }
+
   

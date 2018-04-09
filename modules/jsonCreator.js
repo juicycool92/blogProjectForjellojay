@@ -6,6 +6,8 @@ module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
 		pageSize = boardSize/10;
 	else
 		pageSize = Math.floor((boardSize/10)+1);
+		console.log('testing, post['+raws[0].num+'] date is : '+raws[0].date);
+		console.log('testing, post['+raws[0].num+'] date is : '+new Date(raws[0].date));
 	jsonString +=pageSize+'","content":[';
 	switch(postLen){
 		case 0 : cb('[jsonCreator][writeBlogList]no raws. returning null',null); return;
@@ -35,6 +37,7 @@ module.exports.writeCodeList=(raws,curPage,boardSize,cb)=>{
 		pageSize = boardSize/10;
 	else
 		pageSize = Math.floor((boardSize/10)+1);
+		console.log('testing, post['+raws[0].num+'] date is : '+raws[0].date);
 	jsonString +=pageSize+'","content":[';
 	switch(postLen){
 		case 0 : {

@@ -70,7 +70,7 @@ function uploadBlogPost(mainCategory,rawItems,cb){
     let subCategory1 = rawItems.subCategory1;
     let subCategory2 = rawItems.subCategory2;
     let context = rawItems.contextText;
-    context =context.replace(/<br>/g,'<br\/>');
+    //context =context.replace(/<br>/g,'<br\/>');
 
     let title = rawItems.title;
     poolSql.pool.on('error',(err,client)=>{
@@ -96,8 +96,8 @@ function uploadBlogPost(mainCategory,rawItems,cb){
 function uploadCodePost(mainCategory,rawItems,cb){
     let subCategory1 = rawItems.subCategory1;
     let subCategory2 = rawItems.subCategory2;
-    let context = awItems.context;
-    context =context.replace(/<br>/g,'<br\/>');
+    let context = rawItems.contextText;
+    //context =context.replace(/<br>/g,'<br\/>');
 
     let title = rawItems.title;
     poolSql.pool.on('error',(err,client)=>{
@@ -106,8 +106,8 @@ function uploadCodePost(mainCategory,rawItems,cb){
 	});
 	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-		client.query('INSERT INTO boardcode(bcodecategory1, bcodecategory2, bcodetitle, bcodedate, bcodecontext) VALUES (?, ?, ?, now() AT TIME ZONE \'Asia/Seoul\', ?);',[subCategory1,subCategory2,title,context],(err,res)=>{
-			done();
+		client.query('INSERT INTO boardcode(bcodecategory1, bcodecategory2, bcodetitle, bcodedate, bcodecontext) VALUES ($1, $2, $3, now() AT TIME ZONE \'Asia/Seoul\', $4);',[subCategory1,subCategory2,title,context],(err,res)=>{
+            done();
 			if(err){
 				console.log(err.stack);
 				cb(err);

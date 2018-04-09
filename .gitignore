@@ -26,3 +26,4 @@ node_modules/body-parser/lib/types/raw.js
 node_modules/body-parser/lib/read.js
 log.txt
 log.txt
+*.txt
