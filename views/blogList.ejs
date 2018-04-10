@@ -6,6 +6,7 @@
 <script type="text/javascript">
     var globalVar;
     function clickPost(boardNum){
+        console.log('clicked post num is ['+boardNum+'] and actual postNum is['+globalVar[boardNum].num+']');
 	    location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=blog';
     }
 

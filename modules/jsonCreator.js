@@ -6,8 +6,6 @@ module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
 		pageSize = boardSize/10;
 	else
 		pageSize = Math.floor((boardSize/10)+1);
-		console.log('testing, post['+raws[0].num+'] date is : '+raws[0].date);
-		console.log('testing, post['+raws[0].num+'] date is : '+new Date(raws[0].date));
 	jsonString +=pageSize+'","content":[';
 	switch(postLen){
 		case 0 : cb('[jsonCreator][writeBlogList]no raws. returning null',null); return;
@@ -112,20 +110,21 @@ module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{
 	}else{
 		switch(raws.length){
 			case 1:{
-				jsonString += '{"rnum":"'+raws[0].rnum+'","rname":"'+raws[0].rname+'","rcontext":"'+(raws[0].rcontext).replace(/"/g, '\\"')+'","rdate":"'+raws[0].rdate+'"}';
+				jsonString += '{"rnum":"'+raws[0].rnum+'","rname":"'+raws[0].rname+'","rcontext":'+JSON.stringify(raws[0].rcontext)+',"rdate":"'+raws[0].rdate+'"}';
 				break;
 			}default :{
 				for(var i = 0 ; i < raws.length ; i++){
 					if(i===raws.length-1){
-						jsonString += '{"rnum":"'+raws[i].rnum+'","rname":"'+raws[i].rname+'","rcontext":"'+(raws[i].rcontext).replace(/"/g, '\\"')+'","rdate":"'+raws[i].rdate+'"}';
+						jsonString += '{"rnum":"'+raws[i].rnum+'","rname":"'+raws[i].rname+'","rcontext":'+JSON.stringify(raws[i].rcontext)+',"rdate":"'+raws[i].rdate+'"}';
 					}else{
-						jsonString += '{"rnum":"'+raws[i].rnum+'","rname":"'+raws[i].rname+'","rcontext":"'+(raws[i].rcontext).replace(/"/g, '\\"')+'","rdate":"'+raws[i].rdate+'"},';
+						jsonString += '{"rnum":"'+raws[i].rnum+'","rname":"'+raws[i].rname+'","rcontext":'+JSON.stringify(raws[i].rcontext)+',"rdate":"'+raws[i].rdate+'"},';
 					}
 				}
 				break;
 			}
 		}
 		jsonString +=']}';
+		console.log('reply json\n'+jsonString);
 		cb(null,jsonString);
 	}
 }

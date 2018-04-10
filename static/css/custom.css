@@ -49,6 +49,13 @@
     text-align: center;
     display: inline-block;
 }
+.margin-light-topbottom{
+    margin-top:1rem;
+    margin-bottom:1rem;
+}
+.margin-light-bottom{
+    margin-bottom:1rem;
+}
 .margin-heavy-context{
     margin:3rem;
 }
@@ -71,5 +78,18 @@
 .form-height-3{
     height: 3rem !important;
 }
-
-  
+.col-md-12-mainNav{
+    padding: 0rem;
+}
+.testbutton {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15% 32.5%;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}

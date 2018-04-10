@@ -1,6 +1,7 @@
 module.exports = (app,replyModule,jsonCreator)=>{
 	app.get('/loadReply',(req,res)=>{
 		var reqBoardType = req.query.reqBoardType;//blog ==0 ; code==1
+		console.log('req query is'+JSON.stringify(req.query));
 		console.log('boardType'+reqBoardType);
 		var reqBoard = req.query.reqBoardNum;
 		console.log('[D]Helo'+reqBoard);
@@ -21,7 +22,7 @@ module.exports = (app,replyModule,jsonCreator)=>{
 							console.log('[reply.js][/loadReply]err json :'+err2);
 						}else{
 							console.log(jsonString);
-							res.json(jsonString);
+							res.json(JSON.parse(jsonString));
 						}
 					})
 				}
@@ -48,7 +49,7 @@ module.exports = (app,replyModule,jsonCreator)=>{
 								console.log('[reply.js][/loadReply]err json :'+err3);
 							}else{
 								console.log(jsonString);
-								res.json(jsonString);
+								res.json((JSON.parse(jsonString)));
 							}
 						});
 					}
