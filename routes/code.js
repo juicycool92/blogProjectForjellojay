@@ -5,7 +5,7 @@ module.exports = (app,codeModule,jsonCreator)=>
 	{
 		console.log('codelist');
 		var reqPage;
-		if(!req.query.page)
+		if(!req.query.page || req.query.page<0)
 			reqPage=0;
 		else 
 			reqPage=req.query.page;

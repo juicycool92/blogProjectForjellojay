@@ -11,9 +11,11 @@
 
 $(document).ready(function(){
 	var i = 0;
-	
+	let curPage = new Number('<%=curPage%>');
+    let pageSize = new Number('<%=pageSize%>')
 	var test = JSON.parse('<%-JSON.stringify(content)%>');
-	globalVar = test;
+    globalVar = test;
+    
     if('<%- boardSize %>'==0){  //포스트가없을때. 예외처리용!
         $('#list0').show();
         $('#listId0').attr('colspan',4);
@@ -32,19 +34,22 @@ $(document).ready(function(){
     }
 	
     
-    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/leftover.png" style="position: relative"></a></li>');
-    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/left.png" style="position: relative"></a></li>');
+    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page=0\" style="padding: 1px"><img src="../public/arrow/leftover.png" style="position: relative"></a></li>');
+    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href="/codeList?page='+(curPage-1)+'" style="padding: 1px"><img src="../public/arrow/left.png" style="position: relative"></a></li>');
     
 	for(var j = 0 ; j < <%=pageSize%> ; j++){
-		if(j===<%=curPage%>){
-			$('#pagenationUL').append('<li class="active" style="float:left;display:table-cell"><a href=#>'+(<%=curPage%>+1)+'</a></li>');
+		if(j==curPage){
+			$('#pagenationUL').append('<li class="active" style="float:left;display:table-cell"><a href=#>'+(curPage+1)+'</a></li>');
 		}else{
-			$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page='+j+'\">'+(j+1)+'</a></li>')	
+			$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page='+j+'\">'+(j+1)+'</a></li>')	
 		}
 	}
-	
-	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=0\" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
-	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/blogList?page=<%=pageSize-1%>\" style="padding: 1px"><img src="../public/arrow/rightover.png" style="position: relative"></a></li>');
+	if(curPage == pageSize-1){
+        $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href="" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
+    }else{
+        $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page='+(curPage+1)+'" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
+    }
+	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page='+(pageSize-1)+'" style="padding: 1px"><img src="../public/arrow/rightover.png" style="position: relative"></a></li>');
     
 });
 

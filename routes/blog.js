@@ -5,7 +5,7 @@ module.exports = (app,blogModule,jsonCreator)=>
 	{
 		console.log('bloglist');
 		var reqPage;
-		if(!req.query.page)
+		if(!req.query.page || req.query.page<0)
 			reqPage=0;
 		else 
 			reqPage=req.query.page;
@@ -17,7 +17,9 @@ module.exports = (app,blogModule,jsonCreator)=>
 			}else{
 				jsonCreator.writeBlogList(result,reqPage,boardSize,(err2,jsonResult)=>{
 					if(err2){
-						console.log('[blog][/bloglist]error at jsonCreator cb');	
+						console.log('[blog][/bloglist]error at jsonCreator cb'+err2);
+						res.status(204);
+						res.send();
 					}else{
 						console.log(jsonResult);
 						res.render('../views/blogList',JSON.parse(jsonResult));
