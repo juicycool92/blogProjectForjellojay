@@ -122,7 +122,7 @@ function uploadBlogPost(mainCategory,rawItems,cb){
     let context = rawItems.contextText;
     let thumbnailImg = rawItems.thumbnailImg;
     let thumbnailText = rawItems.thumbnailText;
-    if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null){
+    if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null || !thumbnailImg){
         thumbnailImg='public/noThumbnail.jpg';
     }
     let title = rawItems.title;

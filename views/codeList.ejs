@@ -8,50 +8,140 @@
     function clickPost(boardNum){
 	    location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=code';
     }
+    $(function(){
 
-$(document).ready(function(){
-	var i = 0;
-	let curPage = new Number('<%=curPage%>');
-    let pageSize = new Number('<%=pageSize%>')
-	var test = JSON.parse('<%-JSON.stringify(content)%>');
-    globalVar = test;
+        $.fn.myFunction = function(page){
+            console.log('통신시도 요청 페이지는 '+page);
+            $.ajax({
+                type : "post",
+                url : "/codelist",
+                data : {
+                    'page'  : page,
+                },
+                dataType : "JSON",
+                success : function(data){
+                    console.log('통신성공');
+                    contextData = data;
+                    curPage = new Number(data.curPage);
+                    pageSize = new Number(data.pageSize);
+                    content = data.content;
+                    if(content.length == 0){//포스트가없을때. 예외처리용!
+                        $('#list0').show();
+                        $('#listId0').attr('colspan',4);
+                        $('#listId0').css("text-align", "center"); 
+                        $('#listId0').text('no post yet');
+                    }else{
+                        let i = 0 ;
+                        let pageIndexLen=10;
+                        while(content.length !== i){
+                            $('#list'+i).show();
+                            $('#listId'+i).text(content[i].num);
+                            $('#categoryId'+i).text(content[i].category1+'/'+content[i].category2);
+                            $('#titleId'+i).html(content[i].title);
+                            var tDate = new Date(content[i].date);
+                            $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
+                            i+=1;
+                        }
+                        for(let j = content.length ; j < pageIndexLen ; j++){
+                            $('#list'+j).hide();
+                        }
+                        
+                        $('#pagenationUM li').remove();
+                        $('#pagenationUR li').remove();
+                        for(var j = 0 ; j < pageSize ; j++){
+                            if(j==curPage){
+                                $('#pagenationUM').append('<li class="active" style="float:left;display:table-cell"><a>'+(curPage+1)+'</a></li>');
+                            }else{
+                                $('#pagenationUM').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+j+'"><a>'+(j+1)+'</a></li>')	
+                            }
+                        }
+                        if(curPage == pageSize-1){
+                            $('#pagenationUR').append('<li style="float:left;display:table-cell"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                        }else{
+                            $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage+1)+'"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                        }
+                        $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
+                        $('.btn_toNum').on('click',function(){
+                            console.log($(this).val());
+                            $(this).myFunction($(this).val());
+                        });
+                        console.log('다돌았다');
+                    }
+                },
+                error : function(){
+                    console.log('req readPost failed');
+                    $('#list0').show();
+                    $('#listId0').attr('colspan',4);
+                    $('#listId0').css("text-align", "center"); 
+                    $('#listId0').text('loading post failed!');
+                }
+            });
+        }
+    });
+    $(document).ready(function(){
+        var curPage;
+        var pageSize;
+        $.ajax({
+            type : "post",
+            url : "/codelist",
+            data : {
+                    'page'  : '0',
+                },
+            dataType : "JSON",
+            success : function(data){
+                contextData = data;
+                curPage = new Number(data.curPage);
+                pageSize = new Number(data.pageSize);
     
-    if('<%- boardSize %>'==0){  //포스트가없을때. 예외처리용!
-        $('#list0').show();
-        $('#listId0').attr('colspan',4);
-        $('#listId0').css("text-align", "center"); 
-		$('#listId0').text('no post yet');
-    }else{
-        while(test.length !== i){
-		    $('#list'+i).show();
-		    $('#listId'+i).text(test[i].num);
-		    $('#categoryId'+i).text(test[i].category1+'/'+test[i].category2);
-            $('#titleId'+i).text(test[i].title);
-            var tDate = new Date(test[i].date);
-            $('#dateId'+i).text(tDate.getUTCFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
-            i+=1;
-	    }
-    }
-	
+                content = data.content;
+                if(content.length == 0){//포스트가없을때. 예외처리용!
+                    $('#list0').show();
+                    $('#listId0').attr('colspan',4);
+                    $('#listId0').css("text-align", "center"); 
+                    $('#listId0').text('no post yet');
+                }else{
+                    let i = 0 ;
+                    while(content.length !== i){
+                        $('#list'+i).show();
+                        $('#listId'+i).text(content[i].num);
+                        $('#categoryId'+i).text(content[i].category1+'/'+content[i].category2);
+                        $('#titleId'+i).html(content[i].title);
+                        var tDate = new Date(content[i].date);
+                        $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
+                    i+=1;
+                    }
+                    
+                    $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
+                    $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage-1)+'"><img src="../public/arrow/left.png" style="position: relative"></li>');
+                    for(var j = 0 ; j < pageSize ; j++){
+                        if(j==curPage){
+                            $('#pagenationUM').append('<li class="active" style="float:left;display:table-cell"><a>'+(curPage+1)+'</a></li>');
+                        }else{
+                            $('#pagenationUM').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+j+'"><a>'+(j+1)+'</a></li>')	
+                        }
+                    }
+                    if(curPage == pageSize-1){
+                        $('#pagenationUR').append('<li style="float:left;display:table-cell"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                    }else{
+                        $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage+1)+'"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                    }
+                    $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
+                    $('.btn_toNum').on('click',function(){
+                        console.log($(this).val());
+                        $(this).myFunction($(this).val());
+                    });    
+                }
+            },
+            error : function(){
+                console.log('req readPost failed');
+                $('#list0').show();
+                $('#listId0').attr('colspan',4);
+                $('#listId0').css("text-align", "center"); 
+                $('#listId0').text('loading post failed!');
+            }
+        });
+    });
     
-    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page=0\" style="padding: 1px"><img src="../public/arrow/leftover.png" style="position: relative"></a></li>');
-    $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href="/codeList?page='+(curPage-1)+'" style="padding: 1px"><img src="../public/arrow/left.png" style="position: relative"></a></li>');
-    
-	for(var j = 0 ; j < <%=pageSize%> ; j++){
-		if(j==curPage){
-			$('#pagenationUL').append('<li class="active" style="float:left;display:table-cell"><a href=#>'+(curPage+1)+'</a></li>');
-		}else{
-			$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page='+j+'\">'+(j+1)+'</a></li>')	
-		}
-	}
-	if(curPage == pageSize-1){
-        $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href="" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
-    }else{
-        $('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page='+(curPage+1)+'" style="padding: 1px"><img src="../public/arrow/right.png" style="position: relative"></a></li>');
-    }
-	$('#pagenationUL').append('<li style="float:left;display:table-cell"><a href=\"/codeList?page='+(pageSize-1)+'" style="padding: 1px"><img src="../public/arrow/rightover.png" style="position: relative"></a></li>');
-    
-});
 
 </script>
 
@@ -134,6 +224,8 @@ $(document).ready(function(){
         <div class="row align-content-center margin-maindiv lesspadding" >
             <div class="col-12 col-centered">
                 <ul class="pagination"  id="pagenationUL"></ul>
+                <ul class="pagination"  id="pagenationUM"></ul>
+                <ul class="pagination"  id="pagenationUR"></ul>
             </div>
         </div>
     </nav>
