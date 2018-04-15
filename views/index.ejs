@@ -3,129 +3,149 @@
 <% include header %>
 <body class="container align-content-center" style="background-color: #ebe7e7">
 <%include navbar %>
-
+<script type="text/javascript">
+    $('document').ready(function(){
+        $.ajax({
+            type : "post",
+            url : "/",
+            dataType : "JSON",
+            success : function(data){
+                let testContainer = data;
+                console.log(data);
+                if(data.hotPost){
+                    if(data.hotPost.length>1){
+                        for(let i = new Number(0) ; i < 2 ; i++){
+                            $('#hot_0'+(i+1)+'_title').text(data.hotPost[i].title);
+                            $('#hot_0'+(i+1)+'_category').text(data.hotPost[i].sub);
+                            $('#hot_0'+(i+1)+'_img').attr("src",data.hotPost[i].thimg);
+                            $('#hot_0'+(i+1)+'_context').text(data.hotPost[i].thtext);
+                            $('#hot_0'+(i+1)+'_goTo').attr("href","/readPost?reqBoardNum="+data.hotPost[i].num+"&reqBoardType="+data.hotPost[i].maincat);
+                        }
+                    }else{
+                        $('#hot_01_title').text(data.hotPost[0].title);
+                            $('#hot_01_category').text(data.hotPost[0].sub);
+                            $('#hot_01_img').attr("src",data.hotPost[0].thimg);
+                            $('#hot_01_context').text(data.hotPost[0].thtext);
+                            $('#hot_01_goTo').attr("href","/readPost?reqBoardNum="+data.hotPost[0].num+"&reqBoardType="+data.hotPost[0].maincat);
+                    }                  
+                }
+                if(data.newPost){
+                    if(data.newPost.length>1){
+                        for(i = new Number(0) ; i < 2 ; i++){
+                            $('#new_0'+(i+1)+'_title').text(data.newPost[i].title);
+                            $('#new_0'+(i+1)+'_category').text(data.newPost[i].sub);
+                            $('#new_0'+(i+1)+'_img').attr("src",data.newPost[i].thimg);
+                            $('#new_0'+(i+1)+'_context').text(data.newPost[i].thtext);
+                            $('#new_0'+(i+1)+'_goTo').attr("href","/readPost?reqBoardNum="+data.newPost[i].num+"&reqBoardType="+data.newPost[i].maincat);
+                        }
+                    }else{
+                        $('#new_01_title').text(data.newPost[0].title);
+                        $('#new_01_category').text(data.newPost[0].sub);
+                        $('#new_01_img').attr("src",data.newPost[0].thimg);
+                        $('#new_01_context').text(data.newPost[0].thtext);
+                        $('#new_01_goTo').attr("href","/readPost?reqBoardNum="+data.newPost[0].num+"&reqBoardType="+data.newPost[0].maincat);
+                    }        
+                }
+            },
+            error : function(){
+                console.log('req post / failed');
+            }
+        });
+    });
+</script>
 
 <div class="row">
     <nav class="col-lg-9 com-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
-        <div class="row align-content-center margin-maindiv" style="">
-            <div class="row col-12"> 
-                <h1><a class="font-weight-bold" href="#">Hot Topic</a></h1>
-            </div>
+        <div class="row col-12 align-content-center margin-maindiv">
             <!-- Hot topic row start -->
-            <div class="col-12 col-lg-6 nopadding-left-card">
-                <!-- hot topic col1 -->
-                <div class="row-auto card box-shadow">
-                    <div class="row col-12">
-                        <!--title here -->
-                        title here
-                    </div>
-                    <div class="row col-12">
-                        <!-- sub title here -->
-                        sub title here
-                    </div>
-                    <div class="row">
-                        <div class="col-6 media">
-                            <!-- img here -->
-                            <img class="img-thumbnail img-responsive d-md-block" style="" src="public/indexLogo.png" >
-                        </div>
-                        <div class="col-6">
-                            <!-- context here -->    
-                            this is context area <br> context here <br> context here <br>context here <br> context here <br>context here <br> context here <br> ...                
-                        </div>
-                    </div>
-                    <div class="row col-12" style="text-align: end">
-                            <!-- post link here -->
-                            <a href="#">Continue reading</a>
-                    </div>
-                </div>
+            <div class="row col-12">
+                <p class="h1"><a class="font-weight-bold" href="#">Hot Topic</a></p>
             </div>
-            <div class="col-12 col-lg-6 nopadding-left-card">
-                <!-- hot topic col2 -->
-                <div class="row-auto card box-shadow">
-                        <div class="row col-12">
-                        <!--title here -->
-                        title here
-                    </div>
-                    <div class="row col-12">
-                        <!-- sub title here -->
-                        sub title here
-                    </div>
-                    <div class="row">
-                        <div class="col-6">
-                            <!-- img here -->
-                            <img class="img-thumbnail d-md-block" style="" src="public/indexLogo.png" >
-                        </div>
-                        <div class="col-6">
-                            <!-- context here -->    
-                            this is context area <br> context here <br> context here <br> ...                
-                        </div>
-                    </div>
-                    <div class="row col-12">
-                        <!-- post link here -->
-                        <a href="#">Continue reading</a>
+            <div class="row col-12 col-lg-6 margin-card nopadding-right"> <!-- hot topic col1 -->
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 h3 truncate" id="hot_01_title"></p><!--title-->
+                </div>
+                <div class="row col-12 truncate nopadding-right">
+                    <p class="col-12 h5 text-right" id="hot_01_category"></p><!-- sub title-->
+                </div>
+                <div class="row col-12 nopadding-right">
+                    <div class="col-6 nopadding-right">
+                        <img class="img-thumbnail d-md-block" id="hot_01_img"></img><!-- img-->
+                </div>
+                    <div class="col-6 nopadding-right">
+                        <p class="blockquote" id="hot_01_context"></p><!-- context-->                                
                     </div>
                 </div>
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 text-right"><a href="#" id="hot_01_goTo">Continue reading</a></p><!-- post link-->
+                </div>    
+            </div>
+            <div class="row col-12 col-lg-6 nopadding-right"> <!-- hot topic col2 -->
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 h3 truncate" id="hot_02_title"></p><!--title-->
+                </div>
+                <div class="row col-12 truncate nopadding-right">
+                    <p class="col-12 h5 text-right" id="hot_02_category"></p><!-- sub title-->
+                </div>
+                <div class="row col-12 nopadding-right">
+                    <div class="col-6 nopadding-right">
+                        <img class="img-thumbnail d-md-block" id="hot_02_img"></img><!-- img-->
+                </div>
+                    <div class="col-6 nopadding-right">
+                        <p class="blockquote" id="hot_02_context"></p><!-- context-->
+                    </div>
+                </div>
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 text-right"><a href="#" id="hot_02_goTo">Continue reading</a></p><!-- post link-->
+                </div>    
             </div>    
-            <!-- hot topic row end -->
+            <!-- new topic row end -->
         </div>
-        <div class="row align-content-center margin-maindiv">
+        <div class="row col-12 align-content-center">
+            <div class="row col-12 align-content-center border-topic-bottom"></div>
+        </div>
+        <div class="row col-12 align-content-center margin-maindiv">
             <!-- new topic row start -->
             <div class="row col-12">
                 <h1><a class="font-weight-bold" href="#">New Topic</a> </h1>
             </div>
-            <div class="col-12 col-lg-6 nopadding-left-card">
-                <!-- new topic col1 -->
-                <div class="row-auto card box-shadow">
-                    <div class="row col-12">
-                        <!--title here -->
-                        title here
-                    </div>
-                    <div class="row col-12">
-                        <!-- sub title here -->
-                        sub title here
-                    </div>
-                    <div class="row">
-                        <div class="col-6 media">
-                            <!-- img here -->
-                            <img class="img-thumbnail img-responsive d-md-block" style="" src="public/indexLogo.png" >
-                        </div>
-                        <div class="col-6">
-                            <!-- context here -->    
-                            this is context area <br> context here <br> context here <br>context here <br> context here <br>context here <br> context here <br> ...                
-                        </div>
-                    </div>
-                    <div class="row col-12" style="text-align: end">
-                            <!-- post link here -->
-                            <a href="#">Continue reading</a>
+            <div class="row col-12 col-lg-6 margin-card nopadding-right"> <!-- new topic col1 -->
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 h3 truncate" id="new_01_title"></p><!--title-->
+                </div>
+                <div class="row col-12 truncate nopadding-right">
+                    <p class="col-12 h5 text-right" id="new_01_category"></p><!-- sub title-->
+                </div>
+                <div class="row col-12 nopadding-right">
+                    <div class="col-6 nopadding-right">
+                        <img class="img-thumbnail d-md-block" src="public/indexLogo.png" id="new_01_img"></img><!-- img-->
+                </div>
+                    <div class="col-6 nopadding-right">
+                        <p class="blockquote" id="new_01_context"></p><!-- context-->                                
                     </div>
                 </div>
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 text-right"><a href="#" id="new_01_goTo">Continue reading</a></p><!-- post link-->
+                </div>    
             </div>
-            <div class="col-12 col-lg-6 nopadding-left-card">
-                <!-- new topic col2 -->
-                <div class="row-auto card box-shadow">
-                    <div class="row col-12">
-                        <!--title here -->
-                        title here
-                    </div>
-                    <div class="row col-12">
-                        <!-- sub title here -->
-                        sub title here
-                    </div>
-                    <div class="row">
-                        <div class="col-6">
-                            <!-- img here -->
-                            <img class="img-thumbnail d-md-block" style="" src="public/indexLogo.png" >
-                        </div>
-                        <div class="col-6">
-                            <!-- context here -->    
-                            this is context area <br> context here <br> context here <br> ...                
-                        </div>
-                    </div>
-                    <div class="row col-12">
-                        <!-- post link here -->
-                        <a href="#">Continue reading</a>
+            <div class="row col-12 col-lg-6 nopadding-right"> <!-- new topic col2 -->
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 h3 truncate" id="new_02_title"></p><!--title-->
+                </div>
+                <div class="row col-12 truncate nopadding-right">
+                    <p class="col-12 h5 text-right" id="new_02_category"></p><!-- sub title-->
+                </div>
+                <div class="row col-12 nopadding-right">
+                    <div class="col-6 nopadding-right">
+                        <img class="img-thumbnail d-md-block" src="public/indexLogo.png" id="new_02_img"></img><!-- img-->
+                </div>
+                    <div class="col-6 nopadding-right">
+                        <p class="blockquote" id="new_02_context"></p><!-- context-->
                     </div>
                 </div>
+                <div class="row col-12 nopadding-right">
+                    <p class="col-12 text-right"><a href="#" id="new_02_goTo">Continue reading</a></p><!-- post link-->
+                </div>    
             </div>    
             <!-- new topic row end -->
         </div>        

@@ -98,18 +98,20 @@
                 alert('Title is Empty');
                 return;
             }
-            let thumbnailImg = $($('#editor').find($('img'))[0]).attr('src');
-            console.log($($('#editor').find($('img').first())).attr('src'));
-         
+            
+            let thumbnailImg = ($('#editor').find('img').first()).attr('src');//썸네일용
             let mainCategory = $('#selMain option:selected').text();
             let subCategory1 = $('#selSub1 option:selected').val();
             let subCategory2 = $('#selSub2 option:selected').val();
             let contextText = $('#editor').html();
+            let thumbnailText = $('#editor').text().substring(0,120);
             let title =  $('#title').val();
+            
             if($('#selSub1 option:selected').val()==='addSub')
                 subCategory1 = $('#inputselSub1').val();
             if($('#selSub2 option:selected').val()==='addSub')
                 subCategory2 = $('#inputselSub2').val();
+                
             $.ajax({        //not made router yet
             type : 'post',
             url : '/appendPost',
@@ -119,7 +121,8 @@
                 'subCategory2'  : subCategory2,
                 'contextText'   : contextText,
                 'title'         : title,
-                'thumbnailImg'  : thumbnailImg
+                'thumbnailImg'  : thumbnailImg,
+                'thumbnailText' : thumbnailText
             },
             success : function(data){
                 console.log('success');

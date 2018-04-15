@@ -1,3 +1,4 @@
+//require('throw-max-listeners-error');
 var express = require('express');
 var app = express();
 var fs = require('fs');
@@ -11,8 +12,9 @@ var counterModule = require('./modules/counterModule');
 app.set('views',path.resolve(__dirname,'views'));
 app.set('view engine','ejs');
 app.use(express.static(path.join(__dirname,"static")));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json({limit: "50mb"}));
+app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
+
 app.set('trust proxy', 1) // trust first proxy
 app.use(cookieSession({
     name : 'mySession',
@@ -76,7 +78,7 @@ var codeModule = require('./modules/codeModule.js');
 var jsonCreator = require('./modules/jsonCreator.js');
 var replyModule = require('./modules/replyModule.js');
 var mainModule = require('./modules/mainModule.js');
-var main = require('./routes/main.js')(app,counterModule);
+var main = require('./routes/main.js')(app,counterModule,mainModule,jsonCreator);
 var board = require('./routes/board.js')(app,blogModule,codeModule,jsonCreator);
 var blog = require('./routes/blog.js')(app,blogModule,jsonCreator);
 var code = require('./routes/code.js')(app,codeModule,jsonCreator);

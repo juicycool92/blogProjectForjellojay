@@ -4,7 +4,7 @@ module.exports = (app,blogModule,jsonCreator)=>
 	app.get('/bloglist',(req,res)=>
 	{
 		console.log('bloglist');
-		var reqPage;
+		let reqPage;
 		if(!req.query.page || req.query.page<0)
 			reqPage=0;
 		else 

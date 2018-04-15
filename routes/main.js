@@ -1,7 +1,28 @@
-module.exports = (app,counterModule)=>
+module.exports = (app,counterModule,mainModule,jsonCreator)=>
 {
 	app.get('/',(req,res)=>{
 	    res.render('index');
+	});
+	app.post('/',(req,res)=>{
+		mainModule.getNewAndHot(2,(err,rawData)=>{
+			if(err){
+				console.log('[/]'+err);
+				res.status(204);
+				
+			}else{
+				console.log(JSON.stringify(rawData));
+				jsonCreator.writeNewAndHotPost(rawData,(err,jsonString)=>{
+					if(err){
+						console.log('[/][jsonCreator][writeNewAndHotPost][ERR]'+err);
+						res.status(204);
+					}else{
+						res.json(JSON.parse(jsonString));
+						return;
+					}
+				});
+			}
+			res.send();
+		});
 	});
 	app.get('/about',(req,res)=>
 	{

@@ -369,6 +369,7 @@
       "resolved": "https://registry.npmjs.org/through/-/through-2.3.8.tgz",
       "version": "2.3.8"
     },
+    "throw-max-listeners-error": "^1.0.1",
     "type-is": {
       "integrity": "sha1-yrEPtJCeRByChC6v4a1kbIGARBA=",
       "requires": {

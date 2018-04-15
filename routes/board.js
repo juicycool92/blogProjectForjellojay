@@ -27,6 +27,7 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
                     if(err){
                         console.log('[blog.js][/readPost]err at getListFromCode'+err);
                     }else{
+                        console.log('보내는 제이슨은 :\n'+jsonResult);
                         res.json(JSON.parse(jsonResult));
                         return;
                     }

@@ -36,6 +36,9 @@
 .nopadding-left{
     padding-left:0rem;
 }
+.nopadding-right{
+    padding-right:0rem;
+}
 .nopadding-left-card{
     padding-right: 0.1rem;
     padding-left:0rem;
@@ -92,4 +95,27 @@
     font-size: 16px;
     margin: 4px 2px;
     cursor: pointer;
+}
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+.border-topic-bottom{
+    border-bottom: solid #fafafa;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    margin-top: 2rem;
+}
+.margin-card {
+    border-right: solid #dadada;
+    margin-right: 0%;
+}
+@media(max-width:767px){
+    .margin-card {
+        border-right: hidden;
+    }
+    .border-topic-bottom{
+        border-bottom: hidden;
+    }
 }

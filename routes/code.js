@@ -4,7 +4,7 @@ module.exports = (app,codeModule,jsonCreator)=>
 	app.get('/codelist',(req,res)=>
 	{
 		console.log('codelist');
-		var reqPage;
+		let reqPage;
 		if(!req.query.page || req.query.page<0)
 			reqPage=0;
 		else 
@@ -18,7 +18,8 @@ module.exports = (app,codeModule,jsonCreator)=>
 				jsonCreator.writeCodeList(result,reqPage,boardSize,(err2,jsonResult)=>{
 					if(err2){
                         console.log('[code][/codelist]error at jsonCreator cb : '+err2);
-                        	
+                        res.status(204);
+						res.send();	
 					}else{
 						console.log(jsonResult);
 						res.render('../views/codeList',JSON.parse(jsonResult));

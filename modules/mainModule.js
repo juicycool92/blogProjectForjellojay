@@ -29,7 +29,57 @@ module.exports.appendNewPost=(rawItems,cb)=>{
     }
 
 }
-
+module.exports.getNewAndHot=(reqSize,cb)=>{ //bring new and hot topic form each board.
+    callNewPost(reqSize,(err,resNew)=>{
+        if(err){
+            cb('[mainModule][getNewAndHot][callNewPost][ERR]'+err,null);
+        }else{
+            callHotPost(reqSize,(err,resHot)=>{
+                if(err){
+                    cb('[mainModule][getNewAndHot][callHotPost][ERR]'+err,null);
+                }else{
+                    cb(null,{"new":resNew,"hot":resHot});
+                }
+            });
+        }
+    });
+}
+function callNewPost(reqSize,cb){
+    poolSql.pool.on('error',(err,client)=>{
+		console.error('Unexpected err on idle clients',err);
+		process.exit(-1);
+	});
+	poolSql.pool.connect((err,client,done)=>{
+		if(err) throw err;
+        client.query('select \'blog\' as maincat, bblognum as num, bblogdate as dates, bblogcategory1 as cat1, bblogcategory2 as cat2, bblogtitle as title, bblogthumbnailtext as context, bblogimg as img from boardblog union select \'code\' as mainCat, bcodenum as num, bcodedate as dates, bcodecategory1 as cat1, bcodecategory2 as cat2, bcodetitle as title, bcodethumbnailtext as context, bcodeimg as img from boardcode order by dates desc limit $1;'
+        ,[reqSize],(err,res)=>{
+            done();
+			if(err){
+				cb(err,null);
+			}else{
+				cb(null,res.rows);
+			}
+		});
+	});
+};
+function callHotPost(reqSize,cb){
+    poolSql.pool.on('error',(err,client)=>{
+		console.error('Unexpected err on idle clients',err);
+		process.exit(-1);
+	});
+	poolSql.pool.connect((err,client,done)=>{
+		if(err) throw err;
+        client.query('select \'blog\' as maincat, bblognum as num, bblogcount as counts, bblogcategory1 as cat1, bblogcategory2 as cat2, bblogtitle as title, bblogthumbnailtext as context, bblogimg as img from boardblog union select \'code\' as mainCat, bcodenum as num, bcodecount as counts, bcodecategory1 as cat1, bcodecategory2 as cat2, bcodetitle as title, bcodethumbnailtext as context, bcodeimg as img from boardcode order by counts desc limit $1;'
+        ,[reqSize],(err,res)=>{
+            done();
+			if(err){
+				cb(err,null);
+			}else{
+				cb(null,res.rows);
+			}
+		});
+	});
+};
 module.exports.searchSelectedSubCategory=(mainCat,cb)=>{
     var categoryTable;  //게시물 테이블 이름
     var categoryRow1,categortRow2;  //게시물 row이름
@@ -71,8 +121,10 @@ function uploadBlogPost(mainCategory,rawItems,cb){
     let subCategory2 = rawItems.subCategory2;
     let context = rawItems.contextText;
     let thumbnailImg = rawItems.thumbnailImg;
-    //context =context.replace(/<br>/g,'<br\/>');
-
+    let thumbnailText = rawItems.thumbnailText;
+    if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null){
+        thumbnailImg='public/noThumbnail.jpg';
+    }
     let title = rawItems.title;
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
@@ -80,8 +132,8 @@ function uploadBlogPost(mainCategory,rawItems,cb){
 	});
 	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-        client.query('INSERT INTO boardblog(bblogcategory1, bblogcategory2, bblogtitle, bblogdate, bblogcontext, bblogimg) VALUES ($1, $2, $3, now() AT TIME ZONE \'Asia/Seoul\', $4, $5);',
-            [subCategory1,subCategory2,title,context,thumbnailImg],(err,res)=>{
+        client.query('INSERT INTO boardblog(bblogcategory1, bblogcategory2, bblogtitle, bblogdate, bblogcontext, bblogimg, bblogthumbnailtext ) VALUES ($1, $2, $3, now() AT TIME ZONE \'Asia/Seoul\', $4, $5, $6);',
+            [subCategory1,subCategory2,title,context,thumbnailImg,thumbnailText],(err,res)=>{
             done();
             console.log('여까진왔나'+err);
 			if(err){
@@ -99,15 +151,21 @@ function uploadCodePost(mainCategory,rawItems,cb){
     let subCategory2 = rawItems.subCategory2;
     let context = rawItems.contextText;
     let thumbnailImg = rawItems.thumbnailImg;
-
+    let thumbnailText = rawItems.thumbnailText;
+    
+    if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null || !thumbnailImg){
+        thumbnailImg='public/noThumbnail.jpg';
+    }
     let title = rawItems.title;
+
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
 	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-		client.query('INSERT INTO boardcode(bcodecategory1, bcodecategory2, bcodetitle, bcodedate, bcodecontext, bcodeimg) VALUES ($1, $2, $3, now() AT TIME ZONE \'Asia/Seoul\', $4, $5);',[subCategory1,subCategory2,title,context,thumbnailImg],(err,res)=>{
+       client.query('INSERT INTO boardcode(bcodecategory1, bcodecategory2, bcodetitle, bcodedate, bcodecontext, bcodeimg, bcodethumbnailtext ) VALUES ($1, $2, $3, now() AT TIME ZONE \'Asia/Seoul\', $4, $5, $6);',
+            [subCategory1,subCategory2,title,context,thumbnailImg,thumbnailText],(err,res)=>{
             done();
 			if(err){
 				console.log(err.stack);
