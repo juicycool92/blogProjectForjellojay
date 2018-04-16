@@ -1,4 +1,5 @@
 ﻿var poolSql = require('./poolsql');
+
 module.exports.callBlogAtPageNum = (curPage,cb)=>{
 	//curPage는 불러올 페이지의 번호를 언급한다. curPage가 0일 경우에는, num이 desc로 되었을때 처음 10종목을,
 	//1일 경우에는 1*11 로 해서 11번째부터 10종목을 가져오게끔 짜야 할 것 이다.
