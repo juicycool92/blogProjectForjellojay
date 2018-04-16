@@ -1,11 +1,45 @@
-module.exports = (app)=>
+module.exports = (app,counterModule,mainModule,jsonCreator)=>
 {
 	app.get('/',(req,res)=>{
 	    res.render('index');
+	});
+	app.post('/',(req,res)=>{
+		mainModule.getNewAndHot(2,(err,rawData)=>{
+			if(err){
+				console.log('[/]'+err);
+				res.status(204);
+				
+			}else{
+				console.log(JSON.stringify(rawData));
+				jsonCreator.writeNewAndHotPost(rawData,(err,jsonString)=>{
+					if(err){
+						console.log('[/][jsonCreator][writeNewAndHotPost][ERR]'+err);
+						res.status(204);
+					}else{
+						res.json(JSON.parse(jsonString));
+						return;
+					}
+				});
+			}
+			res.send();
+		});
 	});
 	app.get('/about',(req,res)=>
 	{
 		console.log('/about');
 		res.render('about');
+	});
+	app.get('/visitCounter',(req,res)=>{
+		counterModule.callCount((err,count)=>{
+			if(err){
+				console.log('[main.js][/visitCounter]err'+err);
+				res.status(204);
+			}else{
+				res.send({visit:count});
+			}
+		});
+	});
+	app.get('/test',(req,res)=>{
+	    res.render('editPage');
 	});
 }

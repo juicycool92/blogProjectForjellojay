@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<style>
+
+</style>
+<script type="text/javascript">
+    var globalVar;
+    var curPostType;
+    var curPostNum;
+    
+    
+    function writeReply(replyArr){
+        $('#replyTable').empty();
+        for(let i = 0 ;  i < replyArr.length ; i ++){
+            console.log('loop'+i);
+            var tmp = '<tr><th id="replyId'+i+'"></th><th id="replyContext'+i+'"></th><th id="replyDate'+i+'"></th></tr>';
+            $('#replyTable').append(tmp);
+            $('#replyId'+i).text(replyArr[i].rname);
+            $('#replyContext'+i).append(replyArr[i].rcontext);
+            var tDate = new Date(replyArr[i].rdate);
+            $('#replyDate'+i).text(tDate.getUTCFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
+            $('#replyDate'+i).append('<img src="public/deleteImg.png"  data-toggle="modal" data-target="#exampleModal" data-replynum="'+replyArr[i].rnum+'">');
+        }
+    }
+    $(document).ready(function(){
+        
+        curPostType = '<%=reqBoardType%>';
+        curPostNum = '<%=reqBoardNum%>';
+        console.log('받아온 값 확인 type ['+curPostType+'] num['+curPostNum+']')
+        var contextData;
+        $.ajax({
+            type : "post",
+            url : "/readPost",
+            data : {
+                    'reqBoardType'  : curPostType,
+                    'reqBoardNum'   : curPostNum
+                },
+            dataType : "JSON",
+            success : function(data){
+                contextData = data;
+                $('#postTitle').append(contextData.title);
+                $('#postCategory').append(contextData.category1 +'/'+contextData.category2);
+                let postDate = new Date(contextData.date);
+                $('#postDate').text(postDate.getUTCFullYear()+"년 "+(postDate.getUTCMonth()+1)+"월 "+postDate.getUTCDate()+"일 "+postDate.getUTCHours()+":"+postDate.getUTCMinutes());
+                $('#postContext').html(contextData.context);
+                if(contextData.prevTitle){
+                    $('#prevLink').attr('href','/readPost?reqBoardNum='+contextData.prevNum+'&reqBoardType='+curPostType)
+                    $('#prevTitle').text(contextData.prevTitle);
+                }
+                if(contextData.nextTitle){
+                    $('#nextLink').attr('href','/readPost?reqBoardNum='+contextData.nextNum+'&reqBoardType='+curPostType)
+                    $('#nextTitle').text(contextData.nextTitle);
+                }
+                $.ajax({
+                    type : "GET",
+                    url : "/loadReply?reqBoardType="+curPostType+"&reqBoardNum="+contextData.num,
+                    dataType : "JSON",
+                    success : function(data){
+                        var replyArr = data.reply;
+                        if(replyArr.length === 0){
+                            $('#replyTable').append('<tr><th colspan="3" style="text-align: center"> No Comment Yet</th></tr>');
+                        }else{
+                            writeReply(replyArr);
+                        }
+                    },
+                    error : function(){
+                        console.log('req loadReply failed');
+                    }
+                });
+            },
+            error : function(){
+                console.log('req readPost failed');
+            }
+        });
+        
+        $('#submitReply').on('click',function(){
+            if(!($('#replyInput-Name').val() && $('#replyInput-Passwd').val() && $('#replyCommentText').val())){
+                alert('필수입력란이 공백입니다');
+                console.log(contextData.num);
+            }else {
+                var num = contextData.num;
+                var name = $('#replyInput-Name').val();
+                var passwd = $('#replyInput-Passwd').val();
+                var email = $('#replyInput-Mail').val();
+                var context = $('#replyCommentText').val().replace(/\n/g, "<br/>");
+                var sendjsonSting = {"postType":curPostType,"postNum": num, "name": name, "pw": passwd, "mail": email, "context": context};
+                console.log(JSON.stringify(sendjsonSting));
+                $(function () {
+                    $.ajax({
+                        type: "POST",
+                        contentType: "application/json",
+                        url: "/addReply",
+                        data: JSON.stringify(sendjsonSting),
+                        dataType:"json",
+                        success: function (data2) {
+                            //console.log(JSON.parse(data2).reply.length);
+                            $('#inputName').val('');
+                            $('#inputPasswd').val('');
+                            $('#inputMail').val('');
+                            $('#inputContext').val('');
+                            writeReply(data2.reply);
+                        },
+                        error: function () {
+                            console.log('faild');
+                        }
+                    });
+                });
+            }
+        });
+        $('#modalBtnDelete').on('click',function(){
+            var sendjsonString = '{"postType":"'+curPostType+'","postNum":"'+contextData.num+'","rNum":"'+$('#modalReplyNum').val()+'","rInPwd":"'+$('#modalInputPwd').val()+'"}';
+            console.log(sendjsonString);
+            $(function () {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json",
+                    url: "/deleteReply",
+                    data: sendjsonString,
+                    dataType: "json",
+                    success: function (data3) {
+                        console.log('success');
+                        try{
+                            $('#modalClose').trigger('click');
+                        }catch(e){
+                            console.log(e);
+                        }
+                        
+                        writeReply(JSON.parse(data3).reply);
+                    },
+                    error: function () {
+                        console.log('wrong?');
+                        alert('wrong password');
+                    }
+                });
+            });
+        });
+        $('#modalBtnCancle').on('click',function(){
+            $('#terms-of-service').modal().close();
+        });
+        $('#exampleModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var modal = $(this);
+            var test = button.data('replynum');
+            $(this).addClass('clickable');
+            console.log('야');
+            modal.find('#modalReplyNum').val(test);
+        });
+        console.log('guns ready');
+    });
+    /*
+    var leftDiv = document.getElementById('mainNav').style;
+        document.getElementById('rightNav').style.height = leftDiv;
+        console.log(leftDiv);
+*/
+</script>
+
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+<div class="row">
+    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav col-md-12-mainNav " id="mainNav">
+        <div class="row align-content-center margin-maindiv">
+           <!-- main content start inside of this line --> 
+            <div class="row col-12 align-content-center margin-maindiv">
+                <div class="col-12 text-center title-style" id="postTitle"></div>
+
+            </div>
+            <div class="row col-12 align-content-center margin-maindiv">
+                    <div class="col-6 text-left"  id="postCategory">
+                    </div>
+                    <div class="col-6 text-right" id="postDate">
+                    </div>
+            </div>
+            <div class="row col-12 align-content-center margin-maindiv lesspadding-top">
+                <div class="col-12 text-left"><p><hr></p></div>
+                <div class="col-12 text-left lesspadding-postContext" id="postContext">
+                </div>
+            </div>
+            <div class="row col-12 align-content-center margin-maindiv">
+                    <table class="table">
+                        <tr>
+                            <th class="text-left">
+                                <a href="#" id="prevLink">
+                                    Prev
+                                    <p id="prevTitle"></p>
+                                </a>
+                            </th>
+                            <th class="text-right">
+                                <a href="#" id="nextLink">
+                                    Next
+                                    <p id="nextTitle"></p>
+                                </a>
+                            </th>
+                        </tr>
+                    </table>
+            </div>
+            <div class="row col-12"></div>
+            <div class="row col-12  align-content-center margin-maindiv">
+                <!-- this is writeReply index-->
+                <div class="col-10  offset-1" id="replyDiv">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-12">
+                            <table>
+                                <tr>
+                                    <th>
+                                        Name*
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input class="form-control" type="text" id="replyInput-Name"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <table>
+                                <tr>
+                                    <th>
+                                        Password*
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input class="form-control" type="password" id="replyInput-Passwd"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <table>
+                                <tr>
+                                    <th>
+                                        Email
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <input class="form-control" type="email" id="replyInput-Mail"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row replyDiv" style="margin-top:1rem;">
+
+                        <div class="col-lg-10 col-md-8" >
+                            <textarea id="replyCommentText" class="form-control"></textarea>
+                        </div>
+                        <div class="col-lg-2 col-md-2" >
+                            <button id="submitReply" class="btn btn-block " style="height:100%;">Submit</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="row  col-12  align-content-center margin-maindiv">
+                <div class="col-10  offset-1">
+                    <table class="table" align="center">
+                        <thead>
+                            <tr>
+                                <th class="col-2">Name</th>
+                                <th class="col-6">Context</th>
+                                <th class="col-4">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="replyTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>        
+    </nav>
+    <% include rightnavbar %>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">Delete Reply</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <th>
+                            Insert Password for Delete Reply
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input type="password" class="form-control" id="modalInputPwd">
+                            <input type="text"  id="modalReplyNum" hidden="hidden">
+                        </th>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary"  id="modalBtnDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--end-->
+</div>
+<%include footer%>	
+</html>

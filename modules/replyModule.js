@@ -1,19 +1,21 @@
-const {Pool} = require('pg');
-const pool = new Pool({
-    user : '',
-    host : '',
-    database : '',
-    password : '',
-    port : ''
-});
-module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
-	pool.on('error',(err,client)=>{
+var poolSql = require('./poolsql');
+module.exports.callReplyFromSelectedBoard = (reqBoardType,reqBoardNum,cb)=>{
+	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	poolSql.pool.connect((err,client,done)=>{
+		var blogType;
 		if(err) throw err;
-		client.query('select rblognum as rnum, rblogname as rname, rblogcontext as rcontext, rblogdate as rdate from replyblog where rblogparent = $1 ;',[reqBoardNum],(err,res)=>{
+		if(reqBoardType==='blog'){
+			blogType = 'replyblog';
+		}else if(reqBoardType === 'code'){
+			blogType = 'replycode';
+		}else{
+			cb('wrong reqBoardType',null);
+			return;
+		}
+		client.query('select r'+reqBoardType+'num as rnum, r'+reqBoardType+'name as rname, r'+reqBoardType+'context as rcontext, r'+reqBoardType+'date as rdate from '+blogType+' where r'+reqBoardType+'parent = $1 ;',[reqBoardNum],(err,res)=>{
 			done();
 			if(err){
 				console.log(err.stack);
@@ -26,13 +28,28 @@ module.exports.callReplyFromSelectedBoard = (reqBoardNum,cb)=>{
 	});
 }
 module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
-	pool.on('error',(err,client)=>{
+	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-		client.query('insert into replyblog (rblogparent,rblogdate,rblogname,rblogmail,rblogpassword,rblogcontext) values( $1 ,Now(),$2,$3,$4,$5)  returning rblogparent as num;',[reqArray.postNum,reqArray.name,reqArray.mail,reqArray.pw,reqArray.context],(err,res)=>{
+		var tableName;
+		switch(reqArray.postType){
+			case 'blog':{
+				tableName = 'replyblog';
+				break;
+			}
+			case 'code':{
+				tableName = 'replycode';
+				break;
+			}
+			default:{
+				cb('wrong type name',null);
+				return;
+			}
+		}
+		client.query('insert into '+tableName+' (r'+reqArray.postType+'parent,r'+reqArray.postType+'date,r'+reqArray.postType+'name,r'+reqArray.postType+'mail,r'+reqArray.postType+'password,r'+reqArray.postType+'context) values( $1 ,Now() AT TIME ZONE \'Asia/Seoul\',$2,$3,$4,$5)  returning r'+reqArray.postType+'parent as num;',[reqArray.postNum,reqArray.name,reqArray.mail,reqArray.pw,reqArray.context],(err,res)=>{
 			done();
 			if(err || !res.rows[0] ){
 				console.log(err.stack);
@@ -50,13 +67,29 @@ module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
 	});
 }
 module.exports.deleteReplySelected = (reqArray, cb)=>{
-	pool.on('error',(err,client)=>{
+	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
-	pool.connect((err,client,done)=>{
+	
+	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-		client.query('DELETE FROM public.replyblog WHERE rblognum=$1 and rblogpassword = $2 returning *;',[reqArray.rNum,reqArray.rInPwd],(err,res)=>{
+		var tableName;
+		switch(reqArray.postType){
+			case 'blog':{
+				tableName = 'replyblog';
+				break;
+			}
+			case 'code':{
+				tableName = 'replycode';
+				break;
+			}
+			default:{
+				cb('wrong type name',null);
+				return;
+			}
+		}
+		client.query('DELETE FROM '+tableName+' WHERE r'+reqArray.postType+'num=$1 and r'+reqArray.postType+'password = $2 returning *;',[reqArray.rNum,reqArray.rInPwd],(err,res)=>{
 			done();
 			if(err){
 				console.log(err);

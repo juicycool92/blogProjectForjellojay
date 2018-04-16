@@ -42,6 +42,7 @@
       "resolved": "https://registry.npmjs.org/cookie/-/cookie-0.3.1.tgz",
       "version": "0.3.1"
     },
+    "cookie-session": "^2.0.0-beta.3",
     "cookie-signature": {
       "integrity": "sha1-4wOogrNCzD7oylE6eZmXNNqzriw=",
       "resolved": "https://registry.npmjs.org/cookie-signature/-/cookie-signature-1.0.6.tgz",
@@ -87,6 +88,7 @@
       "version": "1.8.1"
     },
     "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "finalhandler": {
       "integrity": "sha1-zgtoVbRYU+eRsvzGgARtiCU91/U=",
       "requires": {
@@ -367,6 +369,7 @@
       "resolved": "https://registry.npmjs.org/through/-/through-2.3.8.tgz",
       "version": "2.3.8"
     },
+    "throw-max-listeners-error": "^1.0.1",
     "type-is": {
       "integrity": "sha1-yrEPtJCeRByChC6v4a1kbIGARBA=",
       "requires": {
