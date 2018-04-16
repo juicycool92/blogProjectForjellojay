@@ -217,6 +217,8 @@
       "resolved": "https://registry.npmjs.org/parseurl/-/parseurl-1.3.2.tgz",
       "version": "1.3.2"
     },
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
     "path-to-regexp": {
       "integrity": "sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=",
       "resolved": "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-0.1.7.tgz",

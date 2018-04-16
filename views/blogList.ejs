@@ -10,8 +10,7 @@
     }
 $(function(){
 
-    $.fn.myFunction = function(page){
-        console.log('통신시도 요청 페이지는 '+page);
+    $.fn.changePage = function(page){
         $.ajax({
             type : "post",
             url : "/bloglist",
@@ -30,6 +29,9 @@ $(function(){
                     $('#listId0').attr('colspan',4);
                     $('#listId0').css("text-align", "center"); 
                     $('#listId0').text('no post yet');
+                    for(let j = 1 ; j < 10 ; j ++){
+                        $('#list'+j).hide();
+                    }
                 }else{
                     let i = 0 ;
                     let pageIndexLen=10;
@@ -62,10 +64,8 @@ $(function(){
                     }
     	            $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
                     $('.btn_toNum').on('click',function(){
-                        console.log($(this).val());
-                        $(this).myFunction($(this).val());
+                        $(this).changePage($(this).val());
                     });
-                    console.log('다돌았다');
                 }
             },
             error : function(){
@@ -74,11 +74,14 @@ $(function(){
                 $('#listId0').attr('colspan',4);
                 $('#listId0').css("text-align", "center"); 
                 $('#listId0').text('loading post failed!');
+                for(let j = 1 ; j < 10 ; j ++){
+                        $('#list'+j).hide();
+                }
             }
         });
     }
 });
-$(document).ready(function(){
+$(document).ready(function(){   //첫 로딩시 작동되는 시작점.
     var curPage;
     var pageSize;
     $.ajax({
@@ -92,7 +95,6 @@ $(document).ready(function(){
             contextData = data;
             curPage = new Number(data.curPage);
             pageSize = new Number(data.pageSize);
-
             content = data.content;
             if(content.length == 0){//포스트가없을때. 예외처리용!
                 $('#list0').show();
@@ -108,7 +110,7 @@ $(document).ready(function(){
                     $('#titleId'+i).html(content[i].title);
                     var tDate = new Date(content[i].date);
                     $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
-                i+=1;
+                    i+=1;
                 }
                 
                 $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
@@ -127,8 +129,7 @@ $(document).ready(function(){
                 }
 	            $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
                 $('.btn_toNum').on('click',function(){
-                    console.log($(this).val());
-                    $(this).myFunction($(this).val());
+                    $(this).changePage($(this).val());
                 });    
             }
         },
