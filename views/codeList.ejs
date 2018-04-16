@@ -4,9 +4,8 @@
 <body class="container align-content-center" style="background-color: #ebe7e7">
 <%include navbar %>
 <script type="text/javascript">
-    var globalVar;
     function clickPost(boardNum){
-	    location.href='/readPost?reqBoardNum='+globalVar[boardNum].num+'&reqBoardType=code';
+	    location.href='/readPost?reqBoardNum='+content[boardNum].num+'&reqBoardType=code';
     }
     $(function(){
 
