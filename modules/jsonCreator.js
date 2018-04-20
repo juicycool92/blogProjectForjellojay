@@ -1,5 +1,5 @@
 module.exports.writeNewAndHotPost=(raws,cb)=>{
-	console.log('test values : \n'+JSON.stringify(raws));
+	//console.log('test values : \n'+JSON.stringify(raws));
 	let newPost = raws.new;
 	let hotPost = raws.hot;
 	if(!newPost && !hotPost){
@@ -28,7 +28,7 @@ module.exports.writeNewAndHotPost=(raws,cb)=>{
 		}
 	}
 	jsonString+='}';
-	console.log('create json like : \n'+jsonString);
+	//console.log('create json like : \n'+jsonString);
 	cb(null,jsonString);
 }
 module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
@@ -130,7 +130,7 @@ module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{
 				break;
 			}
 		}
-		console.log('[jsonCreator][writeSinglePostandPN]'+jsonString);
+		//console.log('[jsonCreator][writeSinglePostandPN]'+jsonString);
 		cb(null,jsonString);
 	}
 	//	var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+JSON.stringify(raws.context)+'","prevNum":"'+raws[1].num+'","prevTitle":"'+raws[1].title+'","nextNum":"'+raws[0].num+'","nextTitle":"'+raws[1].title+'"}';
@@ -157,7 +157,7 @@ module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{
 			}
 		}
 		jsonString +=']}';
-		console.log('reply json\n'+jsonString);
+		//console.log('reply json\n'+jsonString);
 		cb(null,jsonString);
 	}
 }
@@ -200,7 +200,7 @@ module.exports.sortCategoryies = (rawString,cb)=>{
 				jsonCat2 += ',"' + rawString[rawString.length-1].cat2+'"';
 		}
 		jsonString += jsonCat1 +'],'+ jsonCat2 +']}';
-		console.log('baked jsonString is : \n'+jsonString);
+		//console.log('baked jsonString is : \n'+jsonString);
 		cb(null,jsonString);
 	}
 }

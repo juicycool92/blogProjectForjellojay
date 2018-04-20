@@ -9,7 +9,7 @@
     }
     $(function(){
 
-        $.fn.myFunction = function(page){
+        $.fn.changeListFunc = function(page){
             console.log('통신시도 요청 페이지는 '+page);
             $.ajax({
                 type : "post",
@@ -62,7 +62,7 @@
                         $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
                         $('.btn_toNum').on('click',function(){
                             console.log($(this).val());
-                            $(this).myFunction($(this).val());
+                            $(this).changeListFunc($(this).val());
                         });
                         console.log('다돌았다');
                     }
@@ -127,7 +127,7 @@
                     $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
                     $('.btn_toNum').on('click',function(){
                         console.log($(this).val());
-                        $(this).myFunction($(this).val());
+                        $(this).changeListFunc($(this).val());
                     });    
                 }
             },

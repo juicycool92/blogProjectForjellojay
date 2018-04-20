@@ -66,6 +66,9 @@
     margin-top:3rem;
     margin-bottom:3rem;
 }
+.no-margin{
+    margin : 0px;
+}
 .title-style{
     font-size: 2em;
     font-family: 'Times New Roman', Times, serif;
@@ -118,4 +121,11 @@
     .border-topic-bottom{
         border-bottom: hidden;
     }
+}
+
+.input-red{
+    border: 1px solid red;
+}
+.input-green{
+    border: 1px solid green;
 }
