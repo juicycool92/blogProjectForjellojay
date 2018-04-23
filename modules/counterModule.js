@@ -1,4 +1,52 @@
-var poolSql = require('./poolsql');
+const poolSql = require('./poolsql');
+const fs = require('fs');
+
+module.exports.ipPerVisitChecker = (req,res,next) => {
+    console.log('ip체크 함수 도달. 한 요청에 한번씩 돌아야되는데');
+    var remoteIp = req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress || 
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress;
+        remoteIp = remoteIp.split(':').slice(-1)[0];
+    if(remoteIp == '1')
+        remoteIp = 'localhost';
+    
+    let today = new Date();
+    today = today.setHours(0,0,0,0);
+
+    if(!req.session.lastVisit | req.session.lastVisit != today){
+        req.session.lastVisit = today;
+        writeLog('[app][writeLog][INFO]['+remoteIp+']['+new Date()+']count plus\n',(err)=>{
+            if(err){
+                console.log('[app][writeLog][ERR]count plus :'+err);
+            }
+        });
+    }else{
+        writeLog('[app][writeLog][INFO]['+remoteIp+']['+new Date()+']access\n',(err)=>{
+            if(err){
+                console.log('[app][writeLog][ERR]write err :'+err);
+            }
+        });
+        let todayDate = new Date().getFullYear()+'-'+((new Date().getMonth())+1)+'-'+new Date().getDate();
+        this.countIncrease(todayDate,(err)=>{
+            if(err){
+                writeLog('[INFO]['+remoteIp+']['+new Date()+']access+logged\n',(err)=>{
+                    if(err){
+                        console.log('[app][writeLog]write err :'+err);
+                    }
+                });
+            }else{
+                writeLog('[ERR]['+remoteIp+']['+new Date()+']COUNTING VISITOR DB FAILED WITH ERR::\n::'+err,(err)=>{
+                    if(err){
+                        console.log('[app][writeLog]write err :'+err);
+                    }
+                });
+            }
+        })
+    } 
+    return next();
+}
+
 module.exports.callCount = (cb)=>{
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
@@ -89,4 +137,13 @@ function createDateRow(data,cb){
 			}
 		});
 	});
+}
+function writeLog(logStr,cb){
+    fs.appendFile('log.txt',logStr,(err)=>{
+        if(err){
+            cb(err);
+        }else{
+            cb(null);
+        }
+    });
 }
