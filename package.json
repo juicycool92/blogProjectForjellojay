@@ -16,7 +16,7 @@
       "resolved": "https://registry.npmjs.org/array-flatten/-/array-flatten-1.1.1.tgz",
       "version": "1.1.1"
     },
-    "bcrypt": "^2.0.0",
+    "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
     "buffer-writer": {
       "integrity": "sha1-Iqk2kB4wKa/NdUfrRIfOtpejvwg=",

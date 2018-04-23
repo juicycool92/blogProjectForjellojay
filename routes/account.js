@@ -46,5 +46,11 @@ module.exports = (app,jsonCreator,User,passport)=>{
         })(req,res,next);
 
     });
+    app.post('/Logout',(req,res)=>{
+        req.logOut();
+        req.session.destroy();
+        console.log('account '+req.body.reqId +' is logout');
+        res.status(200).json();
+    });
 
 };

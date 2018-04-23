@@ -1,4 +1,5 @@
 <script type="text/javascript">
+    var gloUserId;//전역유저id
     function flashForModal(objId,text){
         document.getElementById(''+objId+'').innerText=text;
     }
@@ -66,7 +67,7 @@
                         success : function(data){
                             console.log('signin success');
                             console.log(data.userId);
-                            $("#localSignModal .close").click()
+                            $("#localSignModal .close").click();
                             $('#signinSuccessAlert').show();
                             $('#modalLoginID').val(data.userId);
                             alertToggle(true,'trueAlert');
@@ -113,6 +114,11 @@
                             200 : function(data){
                                 console.log(data.message);
                                 //추가작업을 여기부터 작성할것
+                                $("#LoginModal .close").click()
+                                gloUserId = reqId;
+                                alertToggle(false,'notLogin-div');
+                                alertToggle(true,'Login-div');
+                                $('#loginUser-p').text(reqId);
                             },
                             400 : function(data){
                                 alertToggle(true,'FalseAlert');
@@ -159,6 +165,7 @@
                         $('#counter'+(i+1)+'B').attr("src","public/number/th_number"+numbers[i]+".png");    
                     }          
                     if(data.user){
+                        gloUserId = data.user;
                         console.log(data.user +'로 로그인되어있음');
                         //$('#notLogin-div').hide();
                         alertToggle(false,'notLogin-div');
@@ -178,6 +185,33 @@
             $('#modalClose').on('hide.bs.modal',function(e){
                 console.log('도나');
 
+            });
+            $('#logoutModal').on('click',function(){
+                console.log('로그아웃 버튼 클릭됨');
+                $.ajax({
+                    type : "POST",
+                    url : "/Logout",
+                    data : {
+                        'reqId':gloUserId
+                    },
+                    dataType : "JSON",
+                    success : function(data){
+                        console.log('로그아웃 성공, 상태코드는?');
+                    },
+                    statusCode : {
+                        200 : function(){
+                            console.log('logout success');
+                            alertToggle(true,'notLogin-div');
+                            alertToggle(false,'Login-div');
+                        },
+                        400 : function(){
+                            console.log('logout faield?');
+                        }
+                    },
+                    error : function(){
+                        console.log('logout server connection failed');
+                    }
+                });
             });
         });
 
@@ -219,17 +253,18 @@
                     <img  id="counter5B" src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
                 </picture>
             </div>
-            <div class="col-12 collapse in " id="notLogin-div">
-                <input type="button"id="loginModal button" data-toggle="modal" data-target="#myInput" value="LOGIN">
+            <div class="col-12 collapse " id="notLogin-div">
+                <input type="button"id="loginModal" class="btn btn-info"data-toggle="modal" data-target="#LoginModal" value="LOGIN">
             </div>
             <div class="col-12 collapse" id="Login-div">
                 <p>Welcome </p><p id="loginUser-p"></p>
+                <input type="button"id="logoutModal" class="btn btn-info"value="LOGOUT">
             </div>
         </div>
     </div>
 
 <!-- Login Modal -->
-<div class="modal fade in row" id="myInput" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+<div class="modal fade in row" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
     <div class="modal-dialog modal-dialog-centered row" role="document">
         <div class="modal-content row lesspadding align-content-center">
             <div class="modal-header row col-12">

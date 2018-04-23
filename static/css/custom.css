@@ -28,7 +28,11 @@
     padding: 0rem;
     padding-top: 0.5rem;
     background-clip: content-box;
-    background-color: #9fcdff
+    background-color: #ebe7e7f5;
+}
+.lesspadding-bottom{
+    padding: 0em;
+    padding-bottom: 1rem;
 }
 .nopadding{
     padding: 0rem;
@@ -128,4 +132,8 @@
 }
 .input-green{
     border: 1px solid green;
+}
+.btn-nav{
+    color:#000000;
+    background-color: #d0d0d0c4;
 }
