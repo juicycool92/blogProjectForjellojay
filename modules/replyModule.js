@@ -1,5 +1,6 @@
-var poolSql = require('./poolsql');
+const poolSql = require('./poolsql');
 module.exports.callReplyFromSelectedBoard = (reqBoardType,reqBoardNum,cb)=>{
+	//선택된 게시판에서 덧글들을 불러오는 외부묘듈(err,resultJson)
 	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
@@ -21,20 +22,21 @@ module.exports.callReplyFromSelectedBoard = (reqBoardType,reqBoardNum,cb)=>{
 				console.log(err.stack);
 				cb(err,null);
 			}else{
-				//console.log(res.rows);
 				cb(null,res.rows);
 			}
 		});
 	});
 }
+
 module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
+	//선택된 게시판에 댓글을 입력(err,resultNum)
 	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
 	});
 	poolSql.pool.connect((err,client,done)=>{
 		if(err) throw err;
-		var tableName;
+		let tableName;
 		switch(reqArray.postType){
 			case 'blog':{
 				tableName = 'replyblog';
@@ -56,17 +58,16 @@ module.exports.appReplyFromSelectedBoard = (reqArray, cb)=>{
 				cb(err,null);
 			}else{
 				if(!res.rows[0].num == reqArray.postNum){
-					console.log(res.rows[0].num+'  :  '+reqArray.postNum);
-					console.log(res.rows[0].num !== reqArray.postNum);
 					cb('failed to insert without error',null);
 				}
-				console.log(res.rows);
 				cb(null,res.rows[0]);
 			}
 		});
 	});
 }
+
 module.exports.deleteReplySelected = (reqArray, cb)=>{
+	//선택된 댓글을 삭제하는 외부함수(err,result)
 	poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
@@ -95,7 +96,6 @@ module.exports.deleteReplySelected = (reqArray, cb)=>{
 				console.log(err);
 				cb(err,null);
 			}else if(!res.rows[0]){
-				console.log('wrong pw');
 				cb('wrong pw',null);
 			}else{
 				cb(null,res.rows[0]);

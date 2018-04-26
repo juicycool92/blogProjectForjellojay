@@ -1,6 +1,176 @@
 <script type="text/javascript">
-    $(document).ready(function(){
-        $.ajax({
+    var gloUserId;//전역유저id
+    function flashForModal(objId,text){
+        document.getElementById(''+objId+'').innerText=text;
+    }
+    function alertToggle(isVisiable,alertId){
+        if(isVisiable==true){
+            document.getElementById(''+alertId+'').classList.add('in') ;
+        }else if(isVisiable==false){
+            document.getElementById(''+alertId+'').classList.remove('in') ;
+        }else if(!isVisiable){
+            if(document.getElementById(''+alertId+'').classList.contains('in')){
+                document.getElementById(''+alertId+'').classList.remove('in') ;
+            }else{
+                document.getElementById(''+alertId+'').classList.add('in') ;
+            }
+        }
+    }
+
+    const adminFunc = {
+        isAdmin : (userId)=>{
+            if(userId==='admin')
+                return true;
+            else 
+                return false;
+        },
+        activeAdminMenu:(isVisiable)=>{
+            const adminDivClass =document.getElementById('adminDiv').classList; 
+            if(isVisiable){
+                adminDivClass.add('in');
+            }else if(isVisiable==false){
+                adminDivClass.remove('in');
+            }else if(!isVisiable){
+                if(adminDivClass.contains('in')){
+                    adminDivClass.remove('in') ;
+                }else{
+                    adminDivClass.add('in') ;
+                }
+            }
+        },
+        btnWritePost:_=>{
+            document.location.href="/writePost";
+        }
+    }
+
+    $(function(){
+        $.fn.loginFunc = function(reqFlag){
+            console.log('loginFunc에서 받은 flag:'+reqFlag);
+            switch(reqFlag){
+                case "Signin":{
+                    
+                    let reqId;
+                    let reqPw;
+                    let reqName,reqMail;
+                    if(!$('#modalSignID').val()){
+                        $('#modalSignID').attr('class','form-control input-red');
+                        alertToggle(true,'FalseSignAlert');
+                        flashForModal('FalseSignAlertContext','ID is empty!!!');
+                        return;
+                    }else{
+                        reqId = $('#modalSignID').val();
+                        $('#modalSignID').attr('class','form-control input-green');
+                    }if(!$('#modalSignPW').val()){
+                        $('#modalSignPW').attr('class','form-control input-red');
+                        $('#modalSignPWre').attr('class','form-control input-red');
+                        alertToggle(true,'FalseSignAlert');
+                        flashForModal('FalseSignAlertContext','PW is empty!!!');
+                        return;
+                    }else if($('#modalSignPW').val() !== $('#modalSignPWre').val() ){
+                        $('#modalSignPWre').attr('class','form-control input-red');
+                        alertToggle(true,'FalseSignAlert');
+                        flashForModal('FalseSignAlertContext','must fill PW and PWre equally!');
+                        return;
+                    }else{
+                        reqPw = $('#modalSignPW').val();
+                        $('#modalSignPW').attr('class','form-control input-green');
+                        $('#modalSignPWre').attr('class','form-control input-green');
+                    }
+                    alertToggle(false,'FalseSignAlert');
+
+                    reqName = $('#modalSignName').val();
+                    reqMail = $('#modalSignMail').val();
+                    
+                    $.ajax({
+                       type : "POST",
+                        url : "/Signin",
+                        data : {
+                            'reqId':reqId,
+                            'reqPw':reqPw,
+                            'reqName':reqName,
+                            'reqMail':reqMail
+                        },
+                        dataType : "JSON",
+                        success : function(data){
+                            console.log('signin success');
+                            console.log(data.userId);
+                            $("#localSignModal .close").click();
+                            $('#signinSuccessAlert').show();
+                            $('#modalLoginID').val(data.userId);
+                            alertToggle(true,'trueAlert');
+                            flashForModal('TrueAlertContext','Sign in successful!');
+                        },
+                        statusCode:{ 
+                            400 : function(data){
+                                alertToggle(true,'FalseSignAlert');
+                                flashForModal('FalseSignAlertContext',data.responseJSON.message);
+                            }
+                        },
+                        error : function(){
+                            console.log('signed failed');
+                            alertToggle(true,'FalseSignAlert');
+                            flashForModal('FalseSignAlertContext','Signin server connection failed!');
+                        }
+                    });
+                    break;
+                }
+                case "Login":{
+                    let reqId = $('#modalLoginID').val();
+                    let reqPw = $('#modalLoginPW').val();
+                    if(!reqId){
+                        alertToggle(true,'FalseAlert');
+                        flashForModal('FalseAlertContext',"Must fill Id");
+                        return;
+                    }else if(!reqPw){
+                        alertToggle(true,'FalseAlert');
+                        flashForModal('FalseAlertContext',"Must fill Pw");
+                        return;
+                    }
+                    alertToggle(false,'FalseAlert');
+
+                    $.ajax({
+                        type : "POST",
+                        url : "/Login-local",
+                        data : {
+                            'reqId':reqId,
+                            'reqPw':reqPw
+                        },
+                        dataType : "JSON",
+                        success : function(data){},
+                        statusCode:{ 
+                            200 : function(data){
+                                console.log(data.message);
+                                //추가작업을 여기부터 작성할것
+                                $("#LoginModal .close").click()
+                                gloUserId = reqId;
+                                alertToggle(false,'notLogin-div');
+                                alertToggle(true,'Login-div');
+                                $('#loginUser-p').text(reqId);
+                                if(adminFunc.isAdmin(reqId)){
+                                    adminFunc.activeAdminMenu(true);
+                                }else{
+                                    adminFunc.activeAdminMenu(false);
+                                }
+                            },
+                            400 : function(data){
+                                alertToggle(true,'FalseAlert');
+                                flashForModal('FalseAlertContext',data.responseJSON.message);
+                            }
+                        },
+                        error : function(){
+                            alertToggle(true,'FalseAlert');
+                            flashForModal('FalseAlertContext','Login server not response!!!');
+                        }
+                    });
+                    break;
+                }
+                default : {
+                    console.log('Unknown request');
+                }
+            }
+        };
+        $(document).ready(function(){
+            $.ajax({
                 type : "GET",
                 url : "/visitCounter",
                 dataType : "JSON",
@@ -21,18 +191,69 @@
                         for(var j = i ;j<5;j++){
                             numbers[j]=countString[h++];
                         }
-                    }
-    
+                    }                
                     for(var i = 0 ; i < 5 ; i++){
                         $('#counter'+(i+1)+'A').attr("srcset","public/number/number"+numbers[i]+".png");    
                         $('#counter'+(i+1)+'B').attr("src","public/number/th_number"+numbers[i]+".png");    
-                    }                
+                    }          
+                    if(data.user){
+                        gloUserId = data.user;
+                        if(adminFunc.isAdmin(gloUserId)){
+                            adminFunc.activeAdminMenu(true);
+                        }else{
+                            adminFunc.activeAdminMenu(false);
+                        }
+                        alertToggle(false,'notLogin-div');
+                        alertToggle(true,'Login-div');
+                        
+                        $('#loginUser-p').text(data.user);
+                    }else{
+                        
+                        alertToggle(true,'notLogin-div');
+                        alertToggle(false,'Login-div');
+                        adminFunc.activeAdminMenu(false);
+                    }
                 },
                 error : function(){
                     console.log('req counter failed');
                 }
             });
+            $('.btn_modal').on('click',function(){
+                        console.log($(this).val());
+                        $(this).loginFunc($(this).val());
+            });  
+            $('#modalClose').on('hide.bs.modal',function(e){
+                console.log('도나');
 
+            });
+            $('#logoutBtn').on('click',function(){
+                console.log('로그아웃 버튼 클릭됨');
+                $.ajax({
+                    type : "POST",
+                    url : "/Logout",
+                    data : {
+                        'reqId':gloUserId
+                    },
+                    dataType : "JSON",
+                    success : function(data){
+                        console.log('로그아웃 성공, 상태코드는?');
+                    },
+                    statusCode : {
+                        200 : function(){
+                            console.log('logout success');
+                            alertToggle(true,'notLogin-div');
+                            alertToggle(false,'Login-div');
+                        },
+                        400 : function(){
+                            console.log('logout faield?');
+                        }
+                    },
+                    error : function(){
+                        console.log('logout server connection failed');
+                    }
+                });
+            });
+        });
 
     });
 </script>
@@ -45,7 +266,7 @@
 
                 Total visit
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12  align-content-center" align="center" style="max-height:50px;" >
+            <div class="col-12  align-content-center" align="center" >
                 <picture>
                     <source id="counter1A" media="(min-width:65em)" srcset="public/number/number0.png">
                     <!--<source srcset="public/number/number1.png">-->
@@ -72,5 +293,116 @@
                     <img  id="counter5B" src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
                 </picture>
             </div>
+            <div class="col-12 collapse align-content-center" id="notLogin-div">
+                <br>
+                <input type="button"id="loginModal" class="btn btn-info center-block"data-toggle="modal" data-target="#LoginModal" value="LOGIN">
+            </div>
+            <div class="col-12 collapse align-content-center" id="Login-div">
+                <p>Welcome </p><p id="loginUser-p"></p>
+                <div class="row col-12">
+                    <input type="button" id="logoutBtn" class="btn btn-info center-block" value="LOGOUT">
+                </div>
+                <div class="row col-12 collapse lesspadding" id="adminDiv">
+                    <p class="">Admin Tool</p>
+                    <input type="button" id="WriteBtn"  class="btn btn-info center-block" value="WritePost" onClick="adminFunc.btnWritePost()">
+                </div>
+            </div>
         </div>
     </div>
+
+<!-- Login Modal -->
+<div class="modal fade in row" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered row" role="document">
+        <div class="modal-content row lesspadding align-content-center">
+            <div class="modal-header row col-12">
+                <h4 class="modal-title" id="exampleModalLabel">Login</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body row col-12 justify-content-center  align-content-center login-modal-main">
+                <div class="row col-10">
+                    <table class="table">
+                        <tr style="border-top:hidden;">
+                            <th class="">ID</th>
+                            <th><input type="text"  class="form-control" id="modalLoginID"></th>
+                        </tr>
+                        <tr>
+                            <th class="">PW</th>
+                            <th><input type="password" class="form-control" id="modalLoginPW"></th>
+                        </tr>
+                    </table>
+                </div>
+                <div class="row col-8">
+                    <div class="col-6"><button type="button" class="btn btn-md w-100 btn_modal" id="modalSignin" data-toggle="modal" data-target="#localSignModal">Sign</button></div>
+                    <div class="col-6"><input type="button" class="btn btn-md w-100 btn_modal" value="Login" id="modalLogin"></div>
+                </div>
+                <div class="row col-10 align-content-center lesspadding-top ">
+                    <p class="text-center col-12">...or login as</p>
+                </div>
+                <div class="row col-10 align-content-center lesspadding-top ">
+                    <p class="text-center col-12">not avaliable yet :P</p>
+                </div>
+                <div class="row col-12 alert alert-success no-margin collapse" role="alert" id="SuccessAlert">
+                    <p class="text-center col-12">umm</p>
+                </div>
+                <div class="row col-12 alert alert-danger no-margin collapse" role="alert" id="FalseAlert">
+                    <p class="text-center col-12 h3 no-margin" id="FalseAlertContext"></p>
+                </div>
+                <div class="row col-12 alert alert-success no-margin collapse" role="alert" id="trueAlert">
+                    <p class="text-center col-12 h3 no-margin" id="TrueAlertContext"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--end-->
+<!--Local Sign Modal -->
+<div class="modal fade row" id="localSignModal" tabindex="2" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered row" role="document">
+        <div class="modal-content row lesspadding align-content-center">
+            <div class="modal-header row col-12">
+                <h4 class="modal-title" id="exampleModalLabel">Sign in</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body row col-12 justify-content-center  align-content-center">
+                <div class="row col-10">
+                    <table class="table">
+                        <tr style="border-top:hidden;">
+                            <th class="text-danger">ID</th>
+                            <th><input type="text"  class="form-control" id="modalSignID"></th>
+                        </tr>
+                        <tr>
+                            <th class="text-danger">PW</th>
+                            <th><input type="password" class="form-control" id="modalSignPW"></th>
+                        </tr>
+                        <tr>
+                            <th class="text-danger">PW re</th>
+                            <th><input type="password" class="form-control" id="modalSignPWre"></th>
+                        </tr>
+                        <tr>
+                            <th class="">Name</th>
+                            <th><input type="text" class="form-control" id="modalSignName"></th>
+                        </tr>
+                        <tr>
+                            <th class="">Mail</th>
+                            <th><input type="Mail" class="form-control" id="modalSignMail"></th>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="row col-6 lesspadding">
+                    <div class="col-12"><input type="button" class="btn btn-md w-100 btn_modal" value="Signin" id="modalSignin"></div>
+                </div>
+
+                <div class="row col-12 alert alert-danger no-margin collapse" role="alert" id="FalseSignAlert">
+                    <p class="text-center col-12 h3 no-margin" id="FalseSignAlertContext"></p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<!--end-->

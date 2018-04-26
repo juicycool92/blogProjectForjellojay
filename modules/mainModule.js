@@ -1,9 +1,11 @@
-var poolSql = require('./poolsql');
-module.exports.appendNewPost=(rawItems,cb)=>{
-    let mainCategory = rawItems.mainCategory;
+const poolSql = require('./poolsql');
+
+module.exports.appendNewPost=(rawItems,cb)=>{//관리자가 새 post를 입력할때 작동(err)
+    const mainCategory = rawItems.mainCategory;//메인카테고리에 따라 다른 table에 입력된다.
     switch(mainCategory){
         case 'Code':{
-            uploadCodePost(mainCategory,rawItems,(err)=>{
+            uploadPost('code',rawItems,(err)=>{
+            //uploadCodePost(mainCategory,rawItems,(err)=>{
                 if(err){
                     cb('[mainModule.js][appendNewPost][uploadPost][ERR] err : '+err);
                 }else{
@@ -13,7 +15,8 @@ module.exports.appendNewPost=(rawItems,cb)=>{
             return;
         }
         case 'Blog':{
-            uploadBlogPost(mainCategory,rawItems,(err)=>{
+            uploadPost('blog',rawItems,(err)=>{
+            //uploadBlogPost(mainCategory,rawItems,(err)=>{
                 if(err){
                     cb('[mainModule.js][appendNewPost][uploadPost][ERR] err : '+err);
                 }else{
@@ -27,9 +30,8 @@ module.exports.appendNewPost=(rawItems,cb)=>{
             return;
         }
     }
-
 }
-module.exports.getNewAndHot=(reqSize,cb)=>{ //bring new and hot topic form each board.
+module.exports.getNewAndHot=(reqSize,cb)=>{ //신규,핫 토픽을 가져온다.(err,resultJson)
     callNewPost(reqSize,(err,resNew)=>{
         if(err){
             cb('[mainModule][getNewAndHot][callNewPost][ERR]'+err,null);
@@ -44,7 +46,8 @@ module.exports.getNewAndHot=(reqSize,cb)=>{ //bring new and hot topic form each 
         }
     });
 }
-function callNewPost(reqSize,cb){
+
+function callNewPost(reqSize,cb){//새 토픽을 불러오는 내부함수
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
@@ -62,7 +65,7 @@ function callNewPost(reqSize,cb){
 		});
 	});
 };
-function callHotPost(reqSize,cb){
+function callHotPost(reqSize,cb){//핫 토픽을 불러오는 내부함수
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
@@ -80,9 +83,10 @@ function callHotPost(reqSize,cb){
 		});
 	});
 };
-module.exports.searchSelectedSubCategory=(mainCat,cb)=>{
-    var categoryTable;  //게시물 테이블 이름
-    var categoryRow1,categortRow2;  //게시물 row이름
+
+module.exports.searchSelectedSubCategory=(mainCat,cb)=>{//선택된 mainCategory의 subcategory들을 모두 불러온다. 중복은 재외한다.
+    let categoryTable;  //게시물 테이블 이름
+    let categoryRow1,categortRow2;  //게시물 row이름
     switch(mainCat){ // 게시판 종류 switch
         case '0' : {    // blog
             categoryTable = 'boardblog';    categoryRow = 'bblogcategory1';
@@ -116,16 +120,50 @@ module.exports.searchSelectedSubCategory=(mainCat,cb)=>{
             })
     })
 }
-function uploadBlogPost(mainCategory,rawItems,cb){
-    let subCategory1 = rawItems.subCategory1;
-    let subCategory2 = rawItems.subCategory2;
-    let context = rawItems.contextText;
+let uploadPost = (mainCategory,rawItems,cb)=>{  //포스트 업로드 내부함수, 수정버전이므로 버그 발견 가능성 있음.
+    //mainCategory 인자에 db table name과 동일하게 작성하여 실행하면, 아래의 uploadBlogPost나 uploadCodePost처럼 정상작동할것.
+    const subCategory1 = rawItems.subCategory1;
+    const subCategory2 = rawItems.subCategory2;
+    const context = rawItems.contextText;
     let thumbnailImg = rawItems.thumbnailImg;
-    let thumbnailText = rawItems.thumbnailText;
+    const thumbnailText = rawItems.thumbnailText;
     if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null || !thumbnailImg){
         thumbnailImg='public/noThumbnail.jpg';
     }
-    let title = rawItems.title;
+    const title = rawItems.title;
+    poolSql.pool.on('error',(err,client)=>{
+		console.error('Unexpected err on idle clients',err);
+		process.exit(-1);
+	});
+	poolSql.pool.connect((err,client,done)=>{
+		if(err) throw err;
+        client.query('INSERT INTO board'+mainCategory+'(b'+mainCategory+'category1, b'+mainCategory+'category2, b'+mainCategory+'title, b'+mainCategory+'date, b'+mainCategory+'context, b'+mainCategory+'img, b'+mainCategory+'thumbnailtext ) VALUES ($1, $2, $3, now() AT TIME ZONE \'Asia/Seoul\', $4, $5, $6);',
+            [subCategory1,subCategory2,title,context,thumbnailImg,thumbnailText],(err,res)=>{
+            done();
+			if(err){
+				console.log(err.stack);
+				cb(err);
+			}else{
+				console.log(res.rows);
+				cb(null);
+			}
+		});
+	});
+}
+/*
+//NOT USED AT THIS MOMENT. WILL BE REPLACE BY 'uploadPost' FUNCTION DUE TO DUPLICATED ISSUE.
+//IF THERE IS NO SUCH AS ERROR, THIS COMMENT SECTION WILL ERASE AFTER 1.1
+
+function uploadBlogPost(mainCategory,rawItems,cb){  //포스트글을 업로드하는 내부함수
+    const subCategory1 = rawItems.subCategory1;
+    const subCategory2 = rawItems.subCategory2;
+    const context = rawItems.contextText;
+    let thumbnailImg = rawItems.thumbnailImg;
+    const thumbnailText = rawItems.thumbnailText;
+    if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null || !thumbnailImg){
+        thumbnailImg='public/noThumbnail.jpg';
+    }
+    const title = rawItems.title;
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
@@ -147,16 +185,16 @@ function uploadBlogPost(mainCategory,rawItems,cb){
 	});
 };
 function uploadCodePost(mainCategory,rawItems,cb){
-    let subCategory1 = rawItems.subCategory1;
-    let subCategory2 = rawItems.subCategory2;
-    let context = rawItems.contextText;
+    const subCategory1 = rawItems.subCategory1;
+    const subCategory2 = rawItems.subCategory2;
+    const context = rawItems.contextText;
     let thumbnailImg = rawItems.thumbnailImg;
-    let thumbnailText = rawItems.thumbnailText;
+    const thumbnailText = rawItems.thumbnailText;
     
     if(thumbnailImg==='' ||thumbnailImg===' ' ||thumbnailImg===null || !thumbnailImg){
         thumbnailImg='public/noThumbnail.jpg';
     }
-    let title = rawItems.title;
+    const title = rawItems.title;
 
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
@@ -177,3 +215,4 @@ function uploadCodePost(mainCategory,rawItems,cb){
 		});
 	});
 }
+*/

@@ -1,18 +1,16 @@
 module.exports = (app,blogModule,jsonCreator)=>
 {
-	console.log('incomming req on blog ////////////////////');
 	app.get('/bloglist',(req,res)=>
-	{
+	{	//블로그 게시판 리스트
 		res.render('../views/blogList');
 	});
 	app.post('/bloglist',(req,res)=>
-	{
+	{	//블로그 게시판 리스트의 내용
 		let reqPage;
 		if(!req.body.page || req.body.page<0)
 			reqPage=0;
 		else 
-			reqPage=req.body.page;
-		console.log('/bloglist?page='+reqPage);	
+			reqPage=req.body.page;	
 		blogModule.callBlogAtPageNum(reqPage,(err,result,boardSize)=>{
 			if(err){
 				console.log(err);
@@ -24,7 +22,6 @@ module.exports = (app,blogModule,jsonCreator)=>
 						console.log('[blog][/bloglist]error at jsonCreator cb'+err2);
 						res.status(204);
 					}else{
-						console.log(jsonResult);
 						res.json(JSON.parse(jsonResult));
 					}	
 					res.send();

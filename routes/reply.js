@@ -1,10 +1,8 @@
 module.exports = (app,replyModule,jsonCreator)=>{
-	app.get('/loadReply',(req,res)=>{
-		var reqBoardType = req.query.reqBoardType;//blog ==0 ; code==1
-		console.log('req query is'+JSON.stringify(req.query));
-		console.log('boardType'+reqBoardType);
-		var reqBoard = req.query.reqBoardNum;
-		console.log('[D]Helo'+reqBoard);
+	app.get('/loadReply',(req,res)=>
+	{	//댓글 호출
+		const reqBoardType = req.query.reqBoardType;//blog ==0 ; code==1
+		const reqBoard = req.query.reqBoardNum;
 		if(!reqBoardType){
 			console.log('[reply.js][/loadReply]err request boardType is null');
 			res.status(204);
@@ -21,7 +19,6 @@ module.exports = (app,replyModule,jsonCreator)=>{
 						if(err2){
 							console.log('[reply.js][/loadReply]err json :'+err2);
 						}else{
-							console.log(jsonString);
 							res.json(JSON.parse(jsonString));
 						}
 					})
@@ -29,18 +26,18 @@ module.exports = (app,replyModule,jsonCreator)=>{
 			})
 		}
 	}); 
+
 	app.post('/addReply',(req,res)=>{
+		//댓글 추가
 		replyModule.appReplyFromSelectedBoard(req.body,(err,result)=>{
 			if(err){
 				console.log('[reply.js][/addReply]err :'+err);
-				console.log('entering err');
 				res.status(400);
 				res.send();
 			}else{
 				replyModule.callReplyFromSelectedBoard(req.body.postType,req.body.postNum,(err2,result)=>{
 					if(err2){
 						console.log('[reply.js][/addReply]err :'+err2);
-						console.log('entering err');
 						res.status(400);
 						res.send();
 					}else{
@@ -48,8 +45,7 @@ module.exports = (app,replyModule,jsonCreator)=>{
 							if(err3){
 								console.log('[reply.js][/loadReply]err json :'+err3);
 							}else{
-								console.log(jsonString);
-								res.json((JSON.parse(jsonString)));
+								res.json(JSON.parse(jsonString));
 							}
 						});
 					}
@@ -57,17 +53,15 @@ module.exports = (app,replyModule,jsonCreator)=>{
 			}
 		});
 	});
-	app.post('/deleteReply',(req,res)=>{
-		console.log('hey'+req.body.postNum);
+
+	app.post('/deleteReply',(req,res)=>
+	{	//선택된 댓글 삭제
 		replyModule.deleteReplySelected(req.body,(err,result)=>{
 			if(err){
-				
 				if(err==='wrong pw'){
-					console.log(err);
 					res.status(403);
 					res.send();
 				}else{
-					console.log(err);
 					res.status(401);
 					res.send();
 				}
@@ -75,7 +69,6 @@ module.exports = (app,replyModule,jsonCreator)=>{
 				replyModule.callReplyFromSelectedBoard(req.body.postType,req.body.postNum,(err2,result)=>{
 					if(err2){
 						console.log('[reply.js][/addReply]err :'+err2);
-						console.log('entering err');
 						res.status(400);
 						res.send();
 					}else{
@@ -83,9 +76,8 @@ module.exports = (app,replyModule,jsonCreator)=>{
 							if(err3){
 								console.log('[reply.js][/loadReply]err json :'+err3);
 							}else{
-								//console.log(jsonString);
-								res.json(jsonString);
-								res.send();
+								res.json(jsonString).send();
+								//res.send();
 							}
 						});
 					}

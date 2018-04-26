@@ -1,45 +1,7 @@
 module.exports = (app,blogModule,codeModule,jsonCreator)=>
 {
-    app.get('/readPost',(req,res)=>
-	{
-        var reqBoardNum = req.query.reqBoardNum;
-        var reqBoardType = req.query.reqBoardType;
-        res.render('../views/blogPost.ejs',{"reqBoardNum":reqBoardNum,"reqBoardType":reqBoardType});
-    });
-    app.post('/readPost',(req,res)=>{
-        var reqBoardNum = req.body.reqBoardNum;
-        var reqBoardType = req.body.reqBoardType;
-        
-        switch(reqBoardType){
-            case 'blog' : {
-                getListFromBlog(reqBoardNum,reqBoardType,(err,jsonResult)=>{
-                    if(err){
-                        console.log('[blog.js][/readPost]err at getListfromBlog'+err);
-                    }else{
-                        res.json(JSON.parse(jsonResult));
-                        return;
-                    }
-                });
-                break;
-            }
-            case 'code' : {
-                getListFromCode(reqBoardNum,reqBoardType,(err,jsonResult)=>{
-                    if(err){
-                        console.log('[blog.js][/readPost]err at getListFromCode'+err);
-                    }else{
-                        console.log('보내는 제이슨은 :\n'+jsonResult);
-                        res.json(JSON.parse(jsonResult));
-                        return;
-                    }
-                });
-                break;
-            }
-            default : {}
-            res.send();
-        }
-    });
-
-    function getListFromBlog(reqBoardNum,reqBoardType,cb){
+    const getPostFromBlog =(reqBoardNum,reqBoardType,cb)=>{
+        //Blog게시글 내용 출력
         blogModule.callSelectedPost(reqBoardNum,(err,result)=>{
 			if(err){
 				cb(err,null);
@@ -62,7 +24,8 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
         })     
     }
 
-    function getListFromCode(reqBoardNum,reqBoardType,cb){
+    const getPostFromCode = (reqBoardNum,reqBoardType,cb)=>{
+        //Code게시글 내용 출력
         codeModule.callSelectedPost(reqBoardNum,(err,result)=>{
 			if(err){
 				cb(err,null);
@@ -84,5 +47,42 @@ module.exports = (app,blogModule,codeModule,jsonCreator)=>
 			}
 		})
     }
-    
+
+    app.get('/readPost',(req,res)=>
+	{   //게시글 읽기 페이지
+        const reqBoardNum = req.query.reqBoardNum;
+        const reqBoardType = req.query.reqBoardType;
+        res.render('../views/blogPost.ejs',{"reqBoardNum":reqBoardNum,"reqBoardType":reqBoardType});
+    });
+    app.post('/readPost',(req,res)=>{   //게시글 읽기 페이지의 데이터 
+        const reqBoardNum = req.body.reqBoardNum;
+        const reqBoardType = req.body.reqBoardType;
+        
+        switch(reqBoardType){
+            case 'blog' : {
+                getPostFromBlog(reqBoardNum,reqBoardType,(err,jsonResult)=>{
+                    if(err){
+                        console.log('[blog.js][/readPost]err at getListfromBlog'+err);
+                    }else{
+                        res.json(JSON.parse(jsonResult));
+                        return;
+                    }
+                });
+                break;
+            }
+            case 'code' : {
+                getPostFromCode(reqBoardNum,reqBoardType,(err,jsonResult)=>{
+                    if(err){
+                        console.log('[blog.js][/readPost]err at getListFromCode'+err);
+                    }else{
+                        res.json(JSON.parse(jsonResult));
+                        return;
+                    }
+                });
+                break;
+            }
+            default : {}
+            res.send();
+        }
+    });
 }

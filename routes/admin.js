@@ -1,4 +1,5 @@
 module.exports = (app,mainModule,jsonCreator)=>{
+    //subCategory들을 목록화 하여 출력한다.
     app.post('/loadSubCateAll',(req,res)=>{
         console.log(req.body.postType);
         mainModule.searchSelectedSubCategory(req.body.postType,(err,rawResult)=>{
@@ -10,7 +11,6 @@ module.exports = (app,mainModule,jsonCreator)=>{
                         console.log('[admin.js][/loadSubCateAll][ERR]err at jsonCreator.sortCategoryies: \n'+err);
                     }
                     res.json(jsonString);
-                    res.send();
                     return;        
                 });
             }
@@ -19,7 +19,7 @@ module.exports = (app,mainModule,jsonCreator)=>{
         });
     });
 
-    app.post('/appendPost',(req,res)=>{
+    app.post('/appendPost',(req,res)=>{ //게시물을 업로드 한다.
         mainModule.appendNewPost(req.body,(err)=>{
             if(err){
                 console.log('[admin.js][/appendPost][ERR]'+err);
