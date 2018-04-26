@@ -7,10 +7,10 @@ module.exports = (app,codeModule,jsonCreator)=>
 	app.post('/codelist',(req,res)=>
 	{	//codeList 데이터
 		let reqPage;
-		if(!req.query.page || req.query.page<0)
+		if(!req.body.page || req.body.page<0)
 			reqPage=0;
 		else 
-			reqPage=req.query.page;
+			reqPage=req.body.page;
 		codeModule.callcodeAtPageNum(reqPage,(err,result,boardSize)=>{
 			if(err){
 				console.log(err);
