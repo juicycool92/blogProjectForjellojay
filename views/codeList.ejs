@@ -4,6 +4,7 @@
 <body class="container align-content-center" style="background-color: #ebe7e7">
 <%include navbar %>
 <script type="text/javascript">
+
     function clickPost(boardNum){
 	    location.href='/readPost?reqBoardNum='+content[boardNum].num+'&reqBoardType=code';
     }
@@ -19,7 +20,7 @@
                 },
                 dataType : "JSON",
                 success : function(data){
-                    console.log('통신성공');
+                    console.log('통신성공'+data.curPage);
                     contextData = data;
                     curPage = new Number(data.curPage);
                     pageSize = new Number(data.pageSize);
@@ -109,9 +110,9 @@
                         $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
                     i+=1;
                     }
-                    
-                    $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
-                    $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage-1)+'"><img src="../public/arrow/left.png" style="position: relative"></li>');
+                    console.log('너혹시 추가되고있니');
+                    $('#pagenationUL').append('<li class="btn_toNumUL" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
+                    $('#pagenationUL').append('<li class="btn_toNumUL" style="float:left;display:table-cell" value="'+(curPage-1)+'"><img src="../public/arrow/left.png" style="position: relative"></li>');
                     for(var j = 0 ; j < pageSize ; j++){
                         if(j==curPage){
                             $('#pagenationUM').append('<li class="active" style="float:left;display:table-cell"><a>'+(curPage+1)+'</a></li>');
@@ -128,7 +129,11 @@
                     $('.btn_toNum').on('click',function(){
                         console.log($(this).val());
                         $(this).changeListFunc($(this).val());
-                    });    
+                    }); 
+                    $('.btn_toNumUL').on('click',function(){
+                        console.log($(this).val());
+                        $(this).changeListFunc($(this).val());
+                    });     
                 }
             },
             error : function(){

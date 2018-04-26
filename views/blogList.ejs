@@ -111,8 +111,8 @@ $(document).ready(function(){
                 i+=1;
                 }
                 
-                $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
-                $('#pagenationUL').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage-1)+'"><img src="../public/arrow/left.png" style="position: relative"></li>');
+                $('#pagenationUL').append('<li class="btn_toNumUL" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
+                $('#pagenationUL').append('<li class="btn_toNumUL" style="float:left;display:table-cell" value="'+(curPage-1)+'"><img src="../public/arrow/left.png" style="position: relative"></li>');
 	            for(var j = 0 ; j < pageSize ; j++){
 		            if(j==curPage){
 			            $('#pagenationUM').append('<li class="active" style="float:left;display:table-cell"><a>'+(curPage+1)+'</a></li>');
@@ -129,7 +129,11 @@ $(document).ready(function(){
                 $('.btn_toNum').on('click',function(){
                     console.log($(this).val());
                     $(this).myFunction($(this).val());
-                });    
+                });   
+                $('.btn_toNumUL').on('click',function(){
+                    console.log($(this).val());
+                    $(this).myFunction($(this).val());
+                });  
             }
         },
         error : function(){
