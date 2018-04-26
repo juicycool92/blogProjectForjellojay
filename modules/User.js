@@ -2,7 +2,7 @@ const poolSql = require('./poolsql');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;						//값을 적당히 정해서 fix할것.
 
-module.exports.findOne = (reqId,cb)=>{		//id 존재유무 검사 함수(요청id)
+module.exports.findOne = (reqId,cb)=>{		//id 존재유무 검사 함수(err,가입가능한가,결과값)
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);
 		process.exit(-1);
@@ -22,6 +22,7 @@ module.exports.findOne = (reqId,cb)=>{		//id 존재유무 검사 함수(요청id
 		});
 	});
 };
+
 module.exports.comparePassword = (reqId,reqPw,cb)=>{ // 로그인시 비밀번호 대조(요청id,요청pw)
     poolSql.pool.on('error',(err,client)=>{
 		console.error('Unexpected err on idle clients',err);

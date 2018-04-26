@@ -16,6 +16,33 @@
             }
         }
     }
+
+    const adminFunc = {
+        isAdmin : (userId)=>{
+            if(userId==='admin')
+                return true;
+            else 
+                return false;
+        },
+        activeAdminMenu:(isVisiable)=>{
+            const adminDivClass =document.getElementById('adminDiv').classList; 
+            if(isVisiable){
+                adminDivClass.add('in');
+            }else if(isVisiable==false){
+                adminDivClass.remove('in');
+            }else if(!isVisiable){
+                if(adminDivClass.contains('in')){
+                    adminDivClass.remove('in') ;
+                }else{
+                    adminDivClass.add('in') ;
+                }
+            }
+        },
+        btnWritePost:_=>{
+            document.location.href="/writePost";
+        }
+    }
+
     $(function(){
         $.fn.loginFunc = function(reqFlag){
             console.log('loginFunc에서 받은 flag:'+reqFlag);
@@ -119,6 +146,11 @@
                                 alertToggle(false,'notLogin-div');
                                 alertToggle(true,'Login-div');
                                 $('#loginUser-p').text(reqId);
+                                if(adminFunc.isAdmin(reqId)){
+                                    adminFunc.activeAdminMenu(true);
+                                }else{
+                                    adminFunc.activeAdminMenu(false);
+                                }
                             },
                             400 : function(data){
                                 alertToggle(true,'FalseAlert');
@@ -166,12 +198,20 @@
                     }          
                     if(data.user){
                         gloUserId = data.user;
-                        console.log(data.user +'로 로그인되어있음');
-                        //$('#notLogin-div').hide();
+                        if(adminFunc.isAdmin(gloUserId)){
+                            adminFunc.activeAdminMenu(true);
+                        }else{
+                            adminFunc.activeAdminMenu(false);
+                        }
                         alertToggle(false,'notLogin-div');
                         alertToggle(true,'Login-div');
-                        //$('#Login-div').show();
+                        
                         $('#loginUser-p').text(data.user);
+                    }else{
+                        
+                        alertToggle(true,'notLogin-div');
+                        alertToggle(false,'Login-div');
+                        adminFunc.activeAdminMenu(false);
                     }
                 },
                 error : function(){
@@ -186,7 +226,7 @@
                 console.log('도나');
 
             });
-            $('#logoutModal').on('click',function(){
+            $('#logoutBtn').on('click',function(){
                 console.log('로그아웃 버튼 클릭됨');
                 $.ajax({
                     type : "POST",
@@ -226,7 +266,7 @@
 
                 Total visit
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12  align-content-center" align="center" style="max-height:50px;" >
+            <div class="col-12  align-content-center" align="center" >
                 <picture>
                     <source id="counter1A" media="(min-width:65em)" srcset="public/number/number0.png">
                     <!--<source srcset="public/number/number1.png">-->
@@ -253,12 +293,19 @@
                     <img  id="counter5B" src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
                 </picture>
             </div>
-            <div class="col-12 collapse " id="notLogin-div">
-                <input type="button"id="loginModal" class="btn btn-info"data-toggle="modal" data-target="#LoginModal" value="LOGIN">
+            <div class="col-12 collapse align-content-center" id="notLogin-div">
+                <br>
+                <input type="button"id="loginModal" class="btn btn-info center-block"data-toggle="modal" data-target="#LoginModal" value="LOGIN">
             </div>
-            <div class="col-12 collapse" id="Login-div">
+            <div class="col-12 collapse align-content-center" id="Login-div">
                 <p>Welcome </p><p id="loginUser-p"></p>
-                <input type="button"id="logoutModal" class="btn btn-info"value="LOGOUT">
+                <div class="row col-12">
+                    <input type="button" id="logoutBtn" class="btn btn-info center-block" value="LOGOUT">
+                </div>
+                <div class="row col-12 collapse lesspadding" id="adminDiv">
+                    <p class="">Admin Tool</p>
+                    <input type="button" id="WriteBtn"  class="btn btn-info center-block" value="WritePost" onClick="adminFunc.btnWritePost()">
+                </div>
             </div>
         </div>
     </div>

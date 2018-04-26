@@ -1,6 +1,6 @@
 module.exports = (app,jsonCreator,User,passport)=>{
+    //회원가입
     app.post('/Signin',(req,res)=>{
-        
         User.findOne(req.body.reqId,(err,user,isNull)=>{
             if(isNull==false){
                 res.status(400).json({message:"Givin ID is already Exist"});
@@ -13,7 +13,6 @@ module.exports = (app,jsonCreator,User,passport)=>{
                         console.log('[account.js][/Signin][ERR]err without log!');
                     }else{
                         res.json({"userId":result});
-                        res.send();
                         return;
                     }
                     res.status(400).json({message:"Unexpected Error"});
@@ -24,7 +23,7 @@ module.exports = (app,jsonCreator,User,passport)=>{
     });
 
     app.post('/Login-local',(req,res,next)=>{
-        console.log('req상태??'+req.isAuthenticated());
+        //local 전략으로 로그인
         passport.authenticate('local', {session: true},(err,user,info)=>{
             if(err || !user){//unhandled에러res.status(400).json(info);
                 if(!info){
@@ -35,21 +34,18 @@ module.exports = (app,jsonCreator,User,passport)=>{
             }else{
                 req.logIn(user,(err)=>{
                     if(err)
-                        console.log('에러 '+err);
+                        console.log('[account.js][/Login-local][ERR]'+err);
                     else
                         return res.status(200).json({message:req.user.userid});
                 });
-                
             }
             return;
-            
         })(req,res,next);
-
     });
-    app.post('/Logout',(req,res)=>{
+
+    app.post('/Logout',(req,res)=>{ //로그아웃
         req.logOut();
         req.session.destroy();
-        console.log('account '+req.body.reqId +' is logout');
         res.status(200).json();
     });
 

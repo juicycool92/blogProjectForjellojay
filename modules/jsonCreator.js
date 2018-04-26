@@ -1,5 +1,6 @@
-module.exports.writeNewAndHotPost=(raws,cb)=>{
-	//console.log('test values : \n'+JSON.stringify(raws));
+/*보내야하는 JSON으로 압축하는 외부/내부 함수들이 존재하며, 의존성이 없다.
+받은 값을 JSON으로 만들어 돌려준다.*/
+module.exports.writeNewAndHotPost=(raws,cb)=>{	//메인페이지의 new/hot topic의 결과값을 저장.
 	let newPost = raws.new;
 	let hotPost = raws.hot;
 	if(!newPost && !hotPost){
@@ -28,13 +29,13 @@ module.exports.writeNewAndHotPost=(raws,cb)=>{
 		}
 	}
 	jsonString+='}';
-	//console.log('create json like : \n'+jsonString);
 	cb(null,jsonString);
 }
-module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
-	var postLen = raws.length;
-	var jsonString = '{"boardSize":"'+boardSize+'","curPage":"'+curPage+'","pageSize":"';
-	var pageSize;
+
+module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{//blog 게시글의 목록을 압축
+	let postLen = raws.length;
+	let jsonString = '{"boardSize":"'+boardSize+'","curPage":"'+curPage+'","pageSize":"';
+	let pageSize;
 	if(boardSize%10===0)
 		pageSize = boardSize/10;
 	else
@@ -47,7 +48,7 @@ module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
 			break;
 		}
 		default :{
-			for(var i = 0 ; i < raws.length ; i++){
+			for(let i = 0 ; i < raws.length ; i++){
 				if(i == raws.length-1){
 					jsonString += '{"num":"'+raws[i].num+'","category1":"'+raws[i].category1+'","category2":"'+raws[i].category2+'","title":'+JSON.stringify(raws[i].title)+',"date":"'+raws[i].date+'"}]}';					
 				}else{
@@ -60,27 +61,27 @@ module.exports.writeBlogList=(raws,curPage,boardSize,cb)=>{
 	}
 	cb(null,jsonString);
 }
-module.exports.writeCodeList=(raws,curPage,boardSize,cb)=>{
-	var postLen = raws.length;
-	var jsonString = '{"boardSize":"'+boardSize+'","curPage":"'+curPage+'","pageSize":"';
-	var pageSize;
+
+module.exports.writeCodeList=(raws,curPage,boardSize,cb)=>{	//code 게시판의 목록을 압축한다.
+	let postLen = raws.length;
+	let jsonString = '{"boardSize":"'+boardSize+'","curPage":"'+curPage+'","pageSize":"';
+	let pageSize;
 	if(boardSize%10===0)
 		pageSize = boardSize/10;
 	else
 		pageSize = Math.floor((boardSize/10)+1);
-		console.log('testing, post['+raws[0].num+'] date is : '+raws[0].date);
 	jsonString +=pageSize+'","content":[';
 	switch(postLen){
 		case 0 : {
 			jsonString += '{"num":"","category1":"","category2":"","title":"","date":""}]}';
 			break;
-		}//cb('[jsonCreator][writeCodeList]no raws. returning null',null); return;
+		}
 		case 1 : {
 			jsonString += '{"num":"'+raws[0].num+'","category1":"'+raws[0].category1+'","category2":"'+raws[0].category2+'","title":'+JSON.stringify(raws[0].title)+',"date":"'+raws[0].date+'"}]}';
 			break;
 		}
 		default :{
-			for(var i = 0 ; i < raws.length ; i++){
+			for(let i = 0 ; i < raws.length ; i++){
 				if(i == raws.length-1){
 					jsonString += '{"num":"'+raws[i].num+'","category1":"'+raws[i].category1+'","category2":"'+raws[i].category2+'","title":'+JSON.stringify(raws[i].title)+',"date":"'+raws[i].date+'"}]}';					
 				}else{
@@ -93,21 +94,21 @@ module.exports.writeCodeList=(raws,curPage,boardSize,cb)=>{
 	}
 	cb(null,jsonString);
 }
-module.exports.writeSinglePost = (raws,cb)=>{
+
+module.exports.writeSinglePost = (raws,cb)=>{	//단일 개시글을 압축한다. 현제 사용하지 않고있다.
 	if(!raws){
 		cb('[jsonCreator][writeSinglePost]raws are empty',null);
 	}else{
-		var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":'+JSON.stringify(raws.title)+',"date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+'}';
-		console.log('[jsonCreator][writeSinglePost]debug : '+jsonString);
+		let jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":'+JSON.stringify(raws.title)+',"date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+'}';
 		cb(null,jsonString);
-		//JSON.stringify(raws.context)
 	}
 }
-module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{
+
+module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{ //단일게시글과 이전/이후 정보도 함꼐 압축한다.
 	if(!raws){
 		cb('[jsonCreator][writeSinglePostandPN]raws are empty',null);
 	}else{
-		var jsonString;
+		let jsonString;
 		switch(raws2.length){
 			case 0 :{
 				jsonString = '{"boardType":"'+reqBoardType+'","num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":'+JSON.stringify(raws.title)+',"date":"'+raws.date+'","context":'+JSON.stringify(raws.context)+',"prevNum":"","prevTitle":"","nextNum":"","nextTitle":""}';	
@@ -130,14 +131,11 @@ module.exports.writeSinglePostandPN = (raws,raws2,reqBoardType,cb)=>{
 				break;
 			}
 		}
-		//console.log('[jsonCreator][writeSinglePostandPN]'+jsonString);
 		cb(null,jsonString);
 	}
-	//	var jsonString = '{"num":"'+raws.num+'","category1":"'+raws.category1+'","category2":"'+raws.category2+'","title":"'+raws.title+'","date":"'+raws.date+'","context":"'+JSON.stringify(raws.context)+'","prevNum":"'+raws[1].num+'","prevTitle":"'+raws[1].title+'","nextNum":"'+raws[0].num+'","nextTitle":"'+raws[1].title+'"}';
-	
 }
-module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{
-	var jsonString ='{"reply":[';
+module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{	//선택된 게시물의 모든 덧글을 압축한다.
+	let jsonString ='{"reply":[';
 	if(!raws){
 		cb('[jsonCreator][writeAllReplyFromSelectedBoard]raws are empty',null);
 	}else{
@@ -146,7 +144,7 @@ module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{
 				jsonString += '{"rnum":"'+raws[0].rnum+'","rname":"'+raws[0].rname+'","rcontext":'+JSON.stringify(raws[0].rcontext)+',"rdate":"'+raws[0].rdate+'"}';
 				break;
 			}default :{
-				for(var i = 0 ; i < raws.length ; i++){
+				for(let i = 0 ; i < raws.length ; i++){
 					if(i===raws.length-1){
 						jsonString += '{"rnum":"'+raws[i].rnum+'","rname":"'+raws[i].rname+'","rcontext":'+JSON.stringify(raws[i].rcontext)+',"rdate":"'+raws[i].rdate+'"}';
 					}else{
@@ -157,19 +155,17 @@ module.exports.writeAllReplyFromSelectedBoard = (raws,cb)=>{
 			}
 		}
 		jsonString +=']}';
-		//console.log('reply json\n'+jsonString);
 		cb(null,jsonString);
 	}
 }
-module.exports.sortCategoryies = (rawString,cb)=>{
+module.exports.sortCategoryies = (rawString,cb)=>{	//각 카테고리의 프리셋들을 불러온다.
 	if(rawString.length==0 || !rawString){
 		cb('err? no row found, returning NULL','{"cat1":"[]","cat2":"[]"}');
 	}else{
-		var jsonString = '{';
-		var jsonCat1 = new String('"cat1":['), jsonCat2 = new String('"cat2":[');
+		let jsonString = '{';
+		let jsonCat1 = new String('"cat1":['), jsonCat2 = new String('"cat2":[');
 		for(let i = 0; i < rawString.length-1 ; i ++){
 			if(rawString[i].cat1){
-				console.log('cat1 length :'+jsonCat1.length);
 				if(jsonCat1.length == 8 ){
 					jsonCat1 += '"' + rawString[i].cat1 +'"';
 				}else{
@@ -178,7 +174,6 @@ module.exports.sortCategoryies = (rawString,cb)=>{
 			}
 				
 			if(rawString[i].cat2){
-				console.log('cat2 length :'+jsonCat2.length);
 				if(jsonCat2.length == 8 ){
 					jsonCat2 += '"' + rawString[i].cat2 +'"';
 				}else{
@@ -200,7 +195,6 @@ module.exports.sortCategoryies = (rawString,cb)=>{
 				jsonCat2 += ',"' + rawString[rawString.length-1].cat2+'"';
 		}
 		jsonString += jsonCat1 +'],'+ jsonCat2 +']}';
-		//console.log('baked jsonString is : \n'+jsonString);
 		cb(null,jsonString);
 	}
 }

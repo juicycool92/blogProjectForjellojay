@@ -1,9 +1,12 @@
 module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
 {
-	app.get('/',(req,res)=>{
+	app.get('/',(req,res)=>
+	{	//메인 페이지 로드
 	    res.render('index');
 	});
-	app.post('/',(req,res)=>{
+
+	app.post('/',(req,res)=>
+	{	//메인 페이지 데이터 로드
 		mainModule.getNewAndHot(2,(err,rawData)=>{
 			if(err){
 				console.log('[/]'+err);
@@ -14,8 +17,6 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
 						console.log('[/][jsonCreator][writeNewAndHotPost][ERR]'+err);
 						res.status(204);
 					}else{
-						console.log('req상태'+req.isAuthenticated());
-						console.log('reqUser:'+req.user);
 						res.json(JSON.parse(jsonString));
 						return;
 					}
@@ -26,13 +27,14 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
 	});
 
 	app.get('/about',(req,res)=>
-	{
-		console.log('/about');
+	{	//about 페이지 로드
 		res.render('about');
 	});
 
 	app.get('/visitCounter',counterModule.ipPerVisitChecker,(req,res)=>
-	{	//방문자 표시겸(임시?) 조회수 업데이트 함수도 작동한다.
+	{	//방문자 카운터의 값을 전달한다.
+		//수정이 필요할거같은 부분. visit 카운터뿐만 아니라, right nav bar 기능들을 모두 요청하는데,
+		//현제는 카운터+로그인정보 만 가져온다. 추후 right nav기능이 강화된다면, 기능 강화가 필요할 것.
 		counterModule.callCount((err,count)=>{
 			if(err){
 				console.log('[main.js][/visitCounter]err'+err);
@@ -48,7 +50,8 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
 		});
 	});
 
-	app.get('/writePost',(req,res)=>{
+	app.get('/writePost',(req,res)=>
+	{	//어드민잔용 게시글 작성 페이지 로드
 		if(req.isAuthenticated()){
 			if(req.user.userid==='admin'){
 				res.render('editPage');
@@ -58,7 +61,5 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
 		}else{
 			res.render('index');
 		}
-		
-	    
 	});
 }

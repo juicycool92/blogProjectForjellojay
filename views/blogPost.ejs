@@ -119,17 +119,10 @@
                     data: sendjsonString,
                     dataType: "json",
                     success: function (data3) {
-                        console.log('success');
-                        try{
-                            $('#modalClose').trigger('click');
-                        }catch(e){
-                            console.log(e);
-                        }
-                        
+                        $("#deleteModalClose").click();
                         writeReply(JSON.parse(data3).reply);
                     },
                     error: function () {
-                        console.log('wrong?');
                         alert('wrong password');
                     }
                 });
@@ -279,7 +272,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="exampleModalLabel">Delete Reply</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="deleteModalClose">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

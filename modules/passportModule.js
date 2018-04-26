@@ -1,4 +1,4 @@
-var LocalStrategy = require('passport-local').Strategy; //로컬 전략
+const LocalStrategy = require('passport-local').Strategy; //로컬 전략
 module.exports = (passport,User)=>{     //req.logIn 시 실행되는 함수
     passport.serializeUser((user,done)=>{//called when strategy is successful
         done(null,user);//var user will be used first attribute for deserializeUser
@@ -9,7 +9,7 @@ module.exports = (passport,User)=>{     //req.logIn 시 실행되는 함수
         });
     });
 
-    passport.use('local',new LocalStrategy({ // start of LocalStrategy
+    passport.use('local',new LocalStrategy({ // start of LocalStrategy.
         usernameField: 'reqId',
         passwordField: 'reqPw',
         session: true,
