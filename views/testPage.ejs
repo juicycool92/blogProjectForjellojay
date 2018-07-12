@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+<script type="text/javascript">
+
+    window.onload = ()=>{
+        function hasGetUserMedia() {
+        return !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia || navigator.msGetUserMedia);
+    }
+    if (hasGetUserMedia()) {
+        console.log('its ready to go');
+    } else {
+        alert('getUserMedia() is not supported in your browser');
+    }
+    const constraints = {
+        video: true
+    };
+    const video = document.querySelector('video');
+
+    function handleSuccess(stream) {
+        video.srcObject = stream;
+    }
+
+    function handleError(error) {
+        console.error('Reeeejected!', error);
+    }
+
+    navigator.mediaDevices.getUserMedia(constraints).
+        then(handleSuccess).catch(handleError);
+    }
+    
+    $('document').ready(function(){
+        $('#testBtn').on('click',function(){
+            $.ajax({
+                    type : "POST",
+                    url : "/test",
+                    success : function(data){
+                        const curDate = new Date()
+                        console.log('receive at'+curDate)
+                    },
+                    error : function(){}
+            })
+        })
+    });
+</script>
+
+<div class="row">
+    <nav class="col-lg-9 com-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
+        <div class="row">
+            <div class="col-12 align-conten-center">
+            <input type="button" id="testBtn" value="test">
+            Hello
+            <video autoplay></video>
+
+           
+            </div>
+        </div>
+    </nav>
+    <% include rightnavbar %>
+</div>
+
+<%include footer%>	
+</html>
