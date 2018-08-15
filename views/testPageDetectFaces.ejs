@@ -60,20 +60,7 @@
                         div_choose.style.visibility='collapse';
                     }
                 });
-                socket.on('detectFacialRes',(bIsSuccess,resImage)=>{
-                    clearInterval(interval);
-                    console.log(`received result[${bIsSuccess}]`);
-                    if(bIsSuccess){
-                        resultPic.src = resImage;
-                        bReadyForNext = false;
-                        setIntervalManually();
-                        div_choose.style.visibility='visible';
-                    }else{
-                        bReadyForNext = true;
-                        setIntervalManually();
-                        div_choose.style.visibility = 'collepse';
-                    }
-                });
+        
                 btn_okay.onclick=()=>{
                     console.log('click okay');
                     div_choose.style.visibility='collapse';
@@ -126,7 +113,7 @@
                 function viewVideo(){
                     context.drawImage(video,0,0,context.width,context.height);
                     containerImg = canvas.toDataURL('image/webp')
-                    socket.emit('detectFacial',containerImg);
+                    socket.emit('stream',containerImg);
                     //context.clearRect(0, 0, context.width, context.height);
                     console.log('hello');
                 }
