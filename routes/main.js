@@ -1,4 +1,4 @@
-module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
+module.exports = (app,counterModule,mainModule,jsonCreator,passport,io)=>
 {
 	app.get('/',(req,res)=>
 	{	//메인 페이지 로드
@@ -65,20 +65,10 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport)=>
 
 	app.get('/test',(req,res)=>
 	{
-		res.render('testPage');
+		res.render('testPage',{"io":io});
 	})
 	app.post('/test',(req,res)=>
 	{
-		var io = require('socket.io-client')('http://localhost:8081')
-		var ioreq = require('socket.io-request')
-		io.on('connect',()=>{
-			console.log('connected to 8081 server')
-			ioreq(io).request('testReq','hello world').then((ress)=>{
-				console.log(ress);
-				res.send(200);
-			}).catch((err)=>{
-				console.log('catching error on socketio :'+err)
-			})
-		})
+		
 	})
 }

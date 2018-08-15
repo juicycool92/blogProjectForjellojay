@@ -28,3 +28,5 @@ log.txt
 log.txt
 *.txt
 log.txt
+pem/private.pem
+*.pem
