@@ -2,7 +2,12 @@
 var express = require('express');
 var app = express();
 var path = require('path');
-var session = require('express-session');
+const session = require('express-session')({
+    secret: 'keyboard cat', 
+    resave: true, 
+    saveUninitialized: true,
+});
+var sharedsession = require('express-socket.io-session');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
 var passport = require('passport');
@@ -20,11 +25,7 @@ app.set('trust proxy', 1) // trust first proxy
 app.set('views',path.resolve(__dirname,'views'));
 app.set('view engine','ejs');
 app.use(express.static(path.join(__dirname,"static")));
-app.use(session({ 
-    secret: 'keyboard cat', 
-    resave: true, 
-    saveUninitialized: true,
-}));
+app.use(session);
 
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true, parameterLimit:50000}));
@@ -35,6 +36,9 @@ app.use(passport.session());
 const http = require('http').createServer(app);
 const https = require('https').Server(keys,app);
 const io = require('socket.io')(https);
+io.use(sharedsession(session,{
+    autoSave:true
+}));
 const cv = require('opencv4nodejs');
 http.listen(8082,()=>{
     console.log('http 8082 up');

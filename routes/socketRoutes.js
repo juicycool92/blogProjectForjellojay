@@ -33,9 +33,19 @@ module.exports = (app,io,socketModule,User) =>{
             //여기서 reqId가 있는지 추후에는 검사하도록 한다. 일단은 무조건 되게 하자.
             
         });
-        socket.on('faceAuth2',(reqId,img)=>{
-            
-        });//두번쨰 테스트.
+        socket.on('facialAuth',(reqId,img)=>{
+            User.findOne(userId,(err,id)=>{
+                if(err){
+                    console.log(err);
+                }else if(id.userid === userId){
+                    socketModule.authFacial(reqId,img,(err,bIsSuccess,resId)=>{
+
+                    })
+                }else{
+                    console.log('CRITICAL error on socketRoutes, User, findOne');
+                }
+            });
+        });//인증 시도 부분
         socket.on('detectFacial',(img)=>{
             console.log('heyyy')
             socketModule.detectFacial(img,(err,bIsSuccess)=>{

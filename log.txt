@@ -6371,3 +6371,11 @@
 [app][writeLog][INFO][127.0.0.1][Wed Aug 15 2018 17:07:19 GMT+0900 (대한민국 표준시)]count plus
 [app][writeLog][INFO][127.0.0.1][Wed Aug 15 2018 17:14:35 GMT+0900 (대한민국 표준시)]count plus
 [app][writeLog][INFO][127.0.0.1][Wed Aug 15 2018 17:18:55 GMT+0900 (대한민국 표준시)]count plus
+[app][writeLog][INFO][localhost][Thu Aug 16 2018 09:32:58 GMT+0900 (대한민국 표준시)]count plus
+[app][writeLog][INFO][localhost][Thu Aug 16 2018 09:33:05 GMT+0900 (대한민국 표준시)]access
+[ERR][localhost][Thu Aug 16 2018 09:33:05 GMT+0900 (대한민국 표준시)]COUNTING VISITOR DB FAILED WITH ERR::
+::null[app][writeLog][INFO][localhost][Thu Aug 16 2018 09:46:20 GMT+0900 (대한민국 표준시)]count plus
+[app][writeLog][INFO][127.0.0.1][Thu Aug 16 2018 09:49:49 GMT+0900 (대한민국 표준시)]count plus
+[app][writeLog][INFO][127.0.0.1][Thu Aug 16 2018 09:51:30 GMT+0900 (대한민국 표준시)]access
+[ERR][127.0.0.1][Thu Aug 16 2018 09:51:30 GMT+0900 (대한민국 표준시)]COUNTING VISITOR DB FAILED WITH ERR::
+::null[app][writeLog][INFO][127.0.0.1][Thu Aug 16 2018 09:52:14 GMT+0900 (대한민국 표준시)]count plus

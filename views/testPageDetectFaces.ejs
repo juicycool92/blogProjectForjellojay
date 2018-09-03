@@ -20,13 +20,7 @@
                 <input type="text" id="text_userId">
                 <input type="checkbox" value="record" id="chkbox_record">
             </div>
-            <div>
-                <img id="resultPic"><br>
-                <div id="div_choose" style="visibility:collapse">
-                    <input type="button" value="OK" id="btn_okay"><input type="button" value="NO" id="btn_no">
-                </div>
-                
-            </div>
+
             <script src="/socket.io/socket.io.js"></script>
             <script type="text/javascript">
             
@@ -35,12 +29,12 @@
                 canvas.width = context.width = 320; canvas.height = context.height = 240;
                 var video = document.getElementById("video");
                 var containerImg;
-                var resultPic = document.getElementById('resultPic');
+                //var resultPic = document.getElementById('resultPic');
         
                 var chkbox_record = document.getElementById('chkbox_record');
-                var div_choose = document.getElementById('div_choose');
-                var btn_okay = document.getElementById('btn_okay');
-                var btn_no = document.getElementById('btn_no');
+                //var div_choose = document.getElementById('div_choose');
+                //var btn_okay = document.getElementById('btn_okay');
+                //var btn_no = document.getElementById('btn_no');
                 var bReadyForNext = false;
                 
                 var userId;
@@ -50,55 +44,53 @@
                     clearInterval(interval);
                     console.log('receive');
                     if(bSuccess){
-                        resultPic.src = images;
+                        //resultPic.src = images;
                         bReadyForNext=false;
                         setIntervalManually();
-                        div_choose.style.visibility='visible';
+                        //div_choose.style.visibility='visible';
                     }else{
                         bReadyForNext=true;
                         setIntervalManually();
-                        div_choose.style.visibility='collapse';
+                        //div_choose.style.visibility='collapse';
                     }
                 });
-        
-                btn_okay.onclick=()=>{
-                    console.log('click okay');
-                    div_choose.style.visibility='collapse';
-                    bReadyForNext=true;
-                    setIntervalManually();
-                    socket.emit('uploadMyImage',containerImg,userId); 
-                }
-                btn_no.onclick=()=>{
-                    console.log('click no');
-                    div_choose.style.visibility='collapse';
-                    bReadyForNext=true;
-                    setIntervalManually();
-                }
+                socket.on('facialAuthRes',(bIsSuccess)=>{//i think i have to send auth info to client.
+                    clearInterval(interval);
+                    console.log(`received result[${bIsSuccess}]`);
+                    if(bIsSuccess){
+                        //resultPic.src = resImage;
+                        bReadyForNext = false;
+                        setIntervalManually();
+                        //div_choose.style.visibility='visible';
+                    }else{
+                        bReadyForNext = true;
+                        setIntervalManually();
+                        //div_choose.style.visibility = 'collepse';
+                    }
+                });
+
                 function initializer(){ //웹캠 사용가능여부, 활성화
-                    navigator.getUserMedia  = navigator.getUserMedia ||
-                                  navigator.webkitGetUserMedia ||
-                                  navigator.mozGetUserMedia ||
-                                  navigator.msGetUserMedia;
+                    navigator.getUserMedia  =   navigator.getUserMedia ||
+                                                navigator.webkitGetUserMedia ||
+                                                navigator.mozGetUserMedia ||
+                                                navigator.msGetUserMedia;
                     if(navigator.getUserMedia){
                         navigator.getUserMedia({video: true},loadcam,loadfail);
                     }
                 }
                 initializer();
-                chkbox_record.onclick = ()=>{
+                chkbox_record.onclick = ()=>{   //starting loop auth
                     userId = document.getElementById('text_userId').value;
                     console.log(chkbox_record.checked);
                     bReadyForNext = chkbox_record.checked;
                     setIntervalManually();
                 };
-                function setIntervalManually(){
-                   if(bReadyForNext){
+                function setIntervalManually(){//case bReadyForNext is true or false, interval sets
+                   if(bReadyForNext){   //loop every 1 sec
                         interval = setInterval(()=>{
-                            //socket.emit('send');
                             viewVideo();
                         },1000);
-        
-                    }else{
-                        
+                    }else{              //stop loop
                         clearInterval(interval);
                     } 
                 }
@@ -113,12 +105,12 @@
                 function viewVideo(){
                     context.drawImage(video,0,0,context.width,context.height);
                     containerImg = canvas.toDataURL('image/webp')
-                    socket.emit('stream',containerImg);
+                    socket.emit('facialAuth',userId,containerImg);
                     //context.clearRect(0, 0, context.width, context.height);
-                    console.log('hello');
+                    console.log('viewVideo()');
                 }
-                
             </script>
+
             </div>
         </div>
     </nav>
