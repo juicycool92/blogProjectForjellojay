@@ -137,3 +137,9 @@
     color:#000000;
     background-color: #d0d0d0c4;
 }
+.userCapImage{
+    transform: rotateY(180deg);
+    max-width: 320px;
+    max-height: 240px;
+    border-image-repeat: round;
+}

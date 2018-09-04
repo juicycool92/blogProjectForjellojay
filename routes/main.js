@@ -67,8 +67,16 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport,io)=>
 	{
 		res.render('testPage');
 	})
+	app.get('/testRegister',(req,res)=>
+	{
+		res.render('testPageRegisterFaces');
+	})
 	app.get('/testLogin',(req,res)=>
 	{
 		res.render('testPageDetectFaces');
+	})
+	app.get('/testIos',(req,res)=>
+	{
+		res.render('testPageIOS');
 	})
 }

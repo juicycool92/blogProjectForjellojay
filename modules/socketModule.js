@@ -1,46 +1,51 @@
 const cv = require('opencv4nodejs');
 const fs = require('fs');
 const path = require('path');
-let classifiers = new Array(2);
-classifiers[0] = new cv.CascadeClassifier(cv.HAAR_FRONTALFACE_DEFAULT);
-classifiers[1] = new cv.CascadeClassifier(cv.HAAR_EYE_TREE_EYEGLASSES);   
-let myRecognizer = null;
-let imageSetLabelNames = null;
-setTrain(3,()=>{
-    console.log('setTrain() done');
-});
-function setTrain(recognizerType,cb){
+const myRecognizerType ={"_EIGEN_RECOGNIZER":1,"_FISHERFACE_RECOGNIZER":2,"_LBPH_RECOGNIZER":3};
+//this is recognizer map, for selecting recognizer, call myRecognizerType["_WHAT_EVER_YOU_WANT"]
+const classifiers = [new cv.CascadeClassifier(cv.HAAR_FRONTALFACE_DEFAULT), new cv.CascadeClassifier(cv.HAAR_EYE_TREE_EYEGLASSES)];
+//this classifiers variable is face and eye detecting classifier. in case of using diffirence classifier, you have to modify function"""
+let myRecognizer = null;//this is recognizer. 
+let imageSetLabelNames = null; //this array is for recognizer's labels name.
+var curUserImages = new Array(); //this array is using with create new user.
+
+
+const setTrain = (recognizerType,cb)=>{//this function is for trainset. usually called in when this script created.
     readTrainSet((err,res)=>{
-        if(err){//create new one
-            console.log(err);
-            console.log('create new one');
+        if(err){//if TrainSet is not Exist!
+            console.log('[WARN]no Trainset found!! is it first server run? creating new one');
             createNewTrainSet(recognizerType,(err,prepRecognizer,prepLabelName)=>{
                 if(err){
                     console.log(err);
-                }else{
-                    myRecognizer = prepRecognizer;
-                    imageSetLabelNames = prepLabelName;
-                    console.log('prepared recognizer set labels name list : '+imageSetLabelNames);
-                }
-            });
-        }else{//read exist one
-            console.log(`readed file is : ${res}`);
-            loadTrainSet(recognizerType,res,(err,prepRecognizer)=>{
-                if(err){
-                    console.log(err);
+                    cb(err);
                     return;
                 }else{
                     myRecognizer = prepRecognizer;
-                    fs.readFile('static/train/data.json',(err,data)=>{
+                    imageSetLabelNames = prepLabelName;
+                    console.log('prepared recognizer set \nprepared labels name list : '+imageSetLabelNames);
+                }
+            });
+        }else{//if TrainSet is exist,
+            loadTrainSet(recognizerType,res,(err,prepRecognizer)=>{
+                if(err){    //if failed to load Trainset via selected recognizer,
+                    console.log(err);
+                    cb(err);
+                    return;
+                }else{  //if success to load Trainset via selected recognizer,
+                    myRecognizer = prepRecognizer;  //save recognizer as global.
+                    fs.readFile('static/train/data.json',(err,data)=>{  //read label actual name from data.json
                         if(err){
                             console.log(err);
+                            cb(err);
+                            return;
                         }else{
                             const jsonData = JSON.parse(data);
                             let tempVar = new Array();
                             for(var i in jsonData.name){
                                 tempVar.push(jsonData.name[i]);
                             }
-                            imageSetLabelNames = tempVar;
+                            imageSetLabelNames = tempVar;//save to global value.
+                            tempVar = null; //free array
                             console.log('load exist recognizer set done!')
                             console.log('prepared recognizer set labels name list : '+imageSetLabelNames);
                         }
@@ -49,9 +54,11 @@ function setTrain(recognizerType,cb){
             });
         }
         cb(null);
+        return;
     });
 }
-function readTrainSet(cb){
+
+const readTrainSet = (cb)=>{ //this function is read trainSetfile with fs. returning (err,array)
     fs.readdir('static/train',(err,file)=>{
         if(!err && file.length===2){
             fs.readFile(`static/train/data`,(err,res)=>{
@@ -60,9 +67,11 @@ function readTrainSet(cb){
                 }else{
                     cb(null,res);
                 }
+                return;
             });
         }else{
             cb(new Error('ERROR on socketModule.js setTrain() readdir ::'+err),null);
+            return;
         }
     });
 }
@@ -118,6 +127,7 @@ function createNewTrainSet(recognizerType,cb){
         }
     });   
 }
+
 function loadTrainSet(recognizerType,savedData,cb){
     const dirPath = 'recognizerSet/save'
     let recognizer;
@@ -200,9 +210,8 @@ const imageAdd = (imageLocation,image,cb)=>{
             cb(null);
         });
     });
-    
-
 };
+
 const isTargetRectisInsideOfDstRect = (targets,dst,cb)=>{
     for(var i in targets){
         if( ! ( (targets[i].x < dst.x || targets[i].x + targets[i].width < dst.x + dst.width) && 
@@ -212,8 +221,8 @@ const isTargetRectisInsideOfDstRect = (targets,dst,cb)=>{
                 }
     }
     cb(true);
-}
-const facialDetect = (originalImage,cb)=>{
+}//(targetVector2d,dstVector2d) as parameter, return bool as if target Vec2d is inside of dst Vec2d
+const facialDetect = (originalImage,cb)=>{  //(원본이미지)as parameter, retrun as(err,detectedMat area)
     if(!originalImage){
         cb(new Error('ERROR on socketModules.js facialDetect() : image parameter is NULL!! exit func'),null);
     }else{
@@ -244,6 +253,41 @@ const facialDetect = (originalImage,cb)=>{
     }
 };
 
+const recognizeImage = (reqImg,reqId,cb)=>{
+    myRecognizer.predictAsync(reqImg,(err,res)=>{
+        if(err){
+            cb(err,null);
+        }else{
+            console.log(`[LOG]reqImg find success. label is ${imageSetLabelNames[res.label]} , confidence is ${res.confidence}`);
+            cb(null,imageSetLabelNames[res.label]);
+        }
+    });
+}
+const recognizeMultipleImage = (reqId,cb)=>{
+    var resultSets = new Array();
+    for(var i in curUserImages){
+        const res = myRecognizer.predict(curUserImages[i]);
+        console.log(res);
+        if(imageSetLabelNames[res.label] === reqId && res.confidence < 140){
+            resultSets.push(true);
+        }else{
+            resultSets.push(false);
+        }
+        /*
+        myRecognizer.predictAsync(curUserImages[i],(err,res)=>{
+            if(err){
+                resultSets.push(false);
+            }else if(imageSetLabelNames[res.label] === reqId){
+                resultSets.push(true);
+            }else{
+                resultSets.push(false);
+            }
+        });
+        */
+    }
+    console.log(`result : ${resultSets}`)
+    cb(resultSets);
+}
 module.exports.addUserImage=(userId,userImage,cb)=>{
     console.log('visite hereeee')
     const userImageLoc = `userImage/${userId}`;
@@ -291,8 +335,118 @@ module.exports.detectFacial = (userImage,cb)=>{
         cb(null,true);
     });
 }
-module.exports.authFacial = (reqId,reqImg,cb)=>{
-    //img
-}
-    
+const clearArray = (selectedArray)=>{
+    while(selectedArray.length){
+        selectedArray.pop();
+    }
+};
 
+module.exports.authFacial = (reqId,reqImg,cb)=>{    //param(요청자id,요청자img),return as(err,isSuccess,resId,totalCurUserImgLen)
+    //얼굴을 인식하는가, 인식된mat을 반환
+    facialDetect(reqImg,(err,reqImgMat)=>{
+        if(err){
+            cb(err,false);
+            return;
+        }else{
+            curUserImages.push(reqImgMat);
+            if(curUserImages.length < 10 ){
+                cb(null,true,null,curUserImages.length);
+                return;
+            }
+            recognizeMultipleImage(reqId,(resSets)=>{
+                const result = resSets.filter(res =>res == true );
+                console.log('hey!'+result);
+                if(result.length > 6){
+                    cb(null,true,reqId);
+                }else{
+                    cb(new Error(`[ERROR]failed to recognize this person! total testcase
+                     is ${curUserImages.length}, successs testcase length is ${result.length}`)
+                     ,false,null,curUserImages.length);
+                }
+                clearArray(curUserImages);
+            });
+            /*
+            recognizeImage(reqImgMat,reqId,(err,res)=>{
+                if(err)
+                    cb(err,false)
+                else
+                    cb(null,true,res);
+            });
+            */
+        }
+    });
+    //이 얼굴이 데이터베이스에 있는가
+    //결과반환
+}
+const getUserImageLength = (dir)=>{
+    const res = fs.readdirSync(dir);
+    return res.length;
+}
+
+module.exports.registUserImage = (userImage,userId,cb)=>{
+    const userImageLoc = `userImage/${userId}`;
+    const errcode = {"_DETECT_FAILED":0,"_NEED_MORE_IMAGE":1,"_UNCAUGHTERROR":2};
+    let userCvImage = null;
+    facialDetect(userImage,(err,userCvImages)=>{
+        if(err){
+            cb(err,errcode["_DETECT_FAILED"]);
+            return;
+        }
+        userCvImage = userCvImages;
+        console.log('log:: success detected');
+    });
+    fs.access(userImageLoc,fs.constants.F_OK,(err)=>{
+        if(err){
+            fs.mkdir(userImageLoc,(err)=>{
+                if(err){
+                    cb(new Error('ERROR on socketModule.js addUserImage() fs.mkdir() failed ::'+err));
+                    return;
+                }else{
+                    imageAdd(userImageLoc,userCvImage,(err)=>{
+                        if(err){
+                            cb(err,errcode["_UNCAUGHTERROR"]);
+                            return;
+                        }
+                        cb(null,errcode["_NEED_MORE_IMAGE"]);
+                        return;
+                    });
+                }
+            });
+        }else{//이미 폴더는 있는상태, 이미지가 10개 이상인지 확인하고, 이상이다면 err반환, 아니라면 작업
+            curLen= getUserImageLength(userImageLoc);
+            if(curLen > 10){
+                cb(new Error(`User ${userId} already registed`));
+                return;
+            }
+            imageAdd(userImageLoc,userCvImage,(err)=>{
+                if(err){
+                    cb(err);
+                    return;
+                }
+                if(curLen+1 > 10)
+                    cb(null);
+                else
+                    cb(null,errcode["_NEED_MORE_IMAGE"]);
+                return;
+            });
+        }
+    });
+};
+module.exports.retrainRecognizer = (cb)=>{
+    createNewTrainSet(myRecognizerType["_LBPH_RECOGNIZER"],(err,prepRecognizer,prepLabelName)=>{
+        if(err){
+            console.log(err);
+        }else{
+            myRecognizer = prepRecognizer;
+            imageSetLabelNames = prepLabelName;
+            console.log('prepared recognizer set labels name list : '+imageSetLabelNames);
+        }
+    });
+};
+
+setTrain(myRecognizerType["_LBPH_RECOGNIZER"],(err)=>{ //this is called when this module called.
+    if(err){
+        console.log(`[CRITICAL] preparing recognizer from setTrain() FAILED!!! SERVER STOP!!!`);
+        throw new Error('server has blocked');
+    }
+});

@@ -7,14 +7,9 @@
     <nav class="col-lg-9 com-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
         <div class="row">
             <div class="col-12 align-conten-center">
-            <video src="" id="video" style="width:320px;height:240px" autoplay='true'>
-
-            </video>
+            <video src="" id="video" style="width:320px;height:240px" autoplay='true'> </video>
             <canvas id="preview" style="visibility:collapse">
-                
-                <div id='logger'>
-        
-                </div> 
+                <div id='logger'> </div> 
             </canvas>
             <div>
                 <input type="text" id="text_userId">
@@ -26,7 +21,8 @@
             
                 var canvas = document.getElementById("preview");
                 var context = canvas.getContext("2d");
-                canvas.width = context.width = 320; canvas.height = context.height = 240;
+                canvas.width = context.width = 640; 
+                canvas.height = context.height = 480;
                 var video = document.getElementById("video");
                 var containerImg;
                 //var resultPic = document.getElementById('resultPic');
@@ -40,6 +36,27 @@
                 var userId;
                 var interval;
                 var socket = io();
+
+                var imageSets = null;
+
+                var constraints = {
+                    video : {
+                        width:640, 
+                        height:480
+                    }
+                };
+                
+                navigator.mediaDevices.getUserMedia(constraints)
+                .then(mediaStream=>{
+                    video.srcObject = mediaStream;
+                    video.onloadedmetadata = e =>{ video.play();}
+                })
+                .catch(err=>{ 
+                    console.log(err.name + ":" + err.message)
+                    alert(err);
+                });
+                video.setAttribute("playsinline", true);
+                //this is not useful for except safari, in safari case, its wont activate until add this codes
                 socket.on('stream',(bSuccess,images)=>{
                     clearInterval(interval);
                     console.log('receive');
@@ -78,7 +95,7 @@
                         navigator.getUserMedia({video: true},loadcam,loadfail);
                     }
                 }
-                initializer();
+
                 chkbox_record.onclick = ()=>{   //starting loop auth
                     userId = document.getElementById('text_userId').value;
                     console.log(chkbox_record.checked);
@@ -89,7 +106,7 @@
                    if(bReadyForNext){   //loop every 1 sec
                         interval = setInterval(()=>{
                             viewVideo();
-                        },1000);
+                        },2000);
                     }else{              //stop loop
                         clearInterval(interval);
                     } 
@@ -105,6 +122,7 @@
                 function viewVideo(){
                     context.drawImage(video,0,0,context.width,context.height);
                     containerImg = canvas.toDataURL('image/webp')
+                    
                     socket.emit('facialAuth',userId,containerImg);
                     //context.clearRect(0, 0, context.width, context.height);
                     console.log('viewVideo()');

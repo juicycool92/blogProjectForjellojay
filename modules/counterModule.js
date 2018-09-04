@@ -54,7 +54,7 @@ module.exports.callCount = (cb)=>{  //방문자 수를 확인하는 외부함수
 		process.exit(-1);
 	});
 	poolSql.pool.connect((err,client,done)=>{
-		if(err) throw err;
+		if(err) cb(err,null);
 		client.query('select visitcount as count from visitcounter;',(err,res)=>{
 			done();
 			if(err){

@@ -1,10 +1,10 @@
 module.exports = (app,io,socketModule,User) =>{
-    console.log(socketModule);
     io.on('connection',(socket)=>{
         console.log('io on connection ')
         let nCount = 0;
         let facesRect = [];
         let userPic = 0;
+        let authImages = new Array();
         socket.on('uploadMyImage',(image,userId)=>{
             console.log('visit here?')
             User.findOne(userId,(err,id)=>{
@@ -25,7 +25,22 @@ module.exports = (app,io,socketModule,User) =>{
   
             });
         });
-        socket.on('registUserImg',(image)=>{
+        socket.on('registMyImage',(image,userId)=>{
+            socketModule.registUserImage(image,userId,(err,errcode)=>{
+                if(err){
+                    console.log(`user ${userId} regist failed`);
+                    socket.emit('registMyImage',false,errcode);
+                }else if(errcode){
+                    console.log(`user ${userId} regist failed:${errcode}`);
+                    socket.emit('registMyImage',false,errcode);
+                }else{
+                    socketModule.retrainRecognizer((res)=>{
+                        console.log(`user ${userId} regist success`);
+                        socket.emit('registMyImage',true);
+                    });
+                    
+                }
+            });
             //user img registeration socket emitter.
             //will repeat until userPic < 10 or 
         })
@@ -34,12 +49,21 @@ module.exports = (app,io,socketModule,User) =>{
             
         });
         socket.on('facialAuth',(reqId,img)=>{
-            User.findOne(userId,(err,id)=>{
+            User.findOne(reqId,(err,id)=>{
                 if(err){
                     console.log(err);
-                }else if(id.userid === userId){
-                    socketModule.authFacial(reqId,img,(err,bIsSuccess,resId)=>{
-
+                }else if(id.userid === reqId){
+                    //console.log(`[LOG]finduser(${reqId}) done, proceed to socketModule.authFacial()`)
+                    socketModule.authFacial(reqId,img,(err,bIsSuccess,resId,totalCurUserImgLen)=>{
+                        if(err){
+                            console.log(`[ERROR] on socketModule.authFacial() :: ${err}`);
+                        }else if(!bIsSuccess){
+                            console.log(`[INFO] authFacial false`);
+                        }else if(totalCurUserImgLen < 9){
+                            console.log(`[INFO]require more image, cur image length : ${totalCurUserImgLen}`);
+                        }else{
+                            console.log('[SUCCESS]detectingfacial success')
+                        }
                     })
                 }else{
                     console.log('CRITICAL error on socketRoutes, User, findOne');
@@ -50,7 +74,7 @@ module.exports = (app,io,socketModule,User) =>{
             console.log('heyyy')
             socketModule.detectFacial(img,(err,bIsSuccess)=>{
                 if(err){
-                    console.log(err);
+                    console.log(bIsSuccess,' :: ',err);
                     socket.emit('detectFacialRes',bIsSuccess,null);
                 }else{
                     socket.emit('detectFacialRes',bIsSuccess,img);
