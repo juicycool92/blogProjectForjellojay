@@ -48,5 +48,8 @@ module.exports = (app,jsonCreator,User,passport)=>{
         req.session.destroy();
         res.status(200).json();
     });
-
+    app.post('/isUserReadyFaceAuth',(req,res)=>{
+        res.json({"isReady":true,"userId":req.body.userId});
+        res.send();
+    });
 };

@@ -53,7 +53,9 @@ function callNewPost(reqSize,cb){//새 토픽을 불러오는 내부함수
 		process.exit(-1);
 	});
 	poolSql.pool.connect((err,client,done)=>{
-		if(err) throw err;
+		if(err){
+            console.log(`[CRITICAL]EOORO MIGHT SERVER IMPECT DETAIL : `+err);
+        };
         client.query('select \'blog\' as maincat, bblognum as num, bblogdate as dates, bblogcategory1 as cat1, bblogcategory2 as cat2, bblogtitle as title, bblogthumbnailtext as context, bblogimg as img from boardblog union select \'code\' as mainCat, bcodenum as num, bcodedate as dates, bcodecategory1 as cat1, bcodecategory2 as cat2, bcodetitle as title, bcodethumbnailtext as context, bcodeimg as img from boardcode order by dates desc limit $1;'
         ,[reqSize],(err,res)=>{
             done();

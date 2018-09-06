@@ -52,21 +52,33 @@ module.exports = (app,io,socketModule,User) =>{
             User.findOne(reqId,(err,id)=>{
                 if(err){
                     console.log(err);
+                    socket.emit('facialAuthRes',false);
+                    return;
                 }else if(id.userid === reqId){
                     //console.log(`[LOG]finduser(${reqId}) done, proceed to socketModule.authFacial()`)
                     socketModule.authFacial(reqId,img,(err,bIsSuccess,resId,totalCurUserImgLen)=>{
                         if(err){
                             console.log(`[ERROR] on socketModule.authFacial() :: ${err}`);
+                            socket.emit('facialAuthRes',false);
+                            return;
                         }else if(!bIsSuccess){
                             console.log(`[INFO] authFacial false`);
+                            socket.emit('facialAuthRes',false);
+                            return;
                         }else if(totalCurUserImgLen < 9){
                             console.log(`[INFO]require more image, cur image length : ${totalCurUserImgLen}`);
+                            socket.emit('facialAuthRes',false);
+                            return;
                         }else{
                             console.log('[SUCCESS]detectingfacial success')
+                            socket.emit('facialAuthRes',true);
+                            return;
                         }
                     })
                 }else{
                     console.log('CRITICAL error on socketRoutes, User, findOne');
+                    socket.emit('facialAuthRes',false);
+                    return;
                 }
             });
         });//인증 시도 부분
