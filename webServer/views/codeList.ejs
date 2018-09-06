@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+<script type="text/javascript">
+
+    function clickPost(boardNum){
+	    location.href='/readPost?reqBoardNum='+content[boardNum].num+'&reqBoardType=code';
+    }
+    $(function(){
+
+        $.fn.changeListFunc = function(page){
+            console.log('통신시도 요청 페이지는 '+page);
+            $.ajax({
+                type : "post",
+                url : "/codelist",
+                data : {
+                    'page'  : page,
+                },
+                dataType : "JSON",
+                success : function(data){
+                    console.log('통신성공'+data.curPage);
+                    contextData = data;
+                    curPage = new Number(data.curPage);
+                    pageSize = new Number(data.pageSize);
+                    content = data.content;
+                    if(content.length == 0){//포스트가없을때. 예외처리용!
+                        $('#list0').show();
+                        $('#listId0').attr('colspan',4);
+                        $('#listId0').css("text-align", "center"); 
+                        $('#listId0').text('no post yet');
+                    }else{
+                        let i = 0 ;
+                        let pageIndexLen=10;
+                        while(content.length !== i){
+                            $('#list'+i).show();
+                            $('#listId'+i).text(content[i].num);
+                            $('#categoryId'+i).text(content[i].category1+'/'+content[i].category2);
+                            $('#titleId'+i).html(content[i].title);
+                            var tDate = new Date(content[i].date);
+                            $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
+                            i+=1;
+                        }
+                        for(let j = content.length ; j < pageIndexLen ; j++){
+                            $('#list'+j).hide();
+                        }
+                        
+                        $('#pagenationUM li').remove();
+                        $('#pagenationUR li').remove();
+                        for(var j = 0 ; j < pageSize ; j++){
+                            if(j==curPage){
+                                $('#pagenationUM').append('<li class="active" style="float:left;display:table-cell"><a>'+(curPage+1)+'</a></li>');
+                            }else{
+                                $('#pagenationUM').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+j+'"><a>'+(j+1)+'</a></li>')	
+                            }
+                        }
+                        if(curPage == pageSize-1){
+                            $('#pagenationUR').append('<li style="float:left;display:table-cell"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                        }else{
+                            $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage+1)+'"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                        }
+                        $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
+                        $('.btn_toNum').on('click',function(){
+                            console.log($(this).val());
+                            $(this).changeListFunc($(this).val());
+                        });
+                        console.log('다돌았다');
+                    }
+                },
+                error : function(){
+                    console.log('req readPost failed');
+                    $('#list0').show();
+                    $('#listId0').attr('colspan',4);
+                    $('#listId0').css("text-align", "center"); 
+                    $('#listId0').text('loading post failed!');
+                }
+            });
+        }
+    });
+    $(document).ready(function(){
+        var curPage;
+        var pageSize;
+        $.ajax({
+            type : "post",
+            url : "/codelist",
+            data : {
+                    'page'  : '0',
+                },
+            dataType : "JSON",
+            success : function(data){
+                contextData = data;
+                curPage = new Number(data.curPage);
+                pageSize = new Number(data.pageSize);
+    
+                content = data.content;
+                if(content.length == 0){//포스트가없을때. 예외처리용!
+                    $('#list0').show();
+                    $('#listId0').attr('colspan',4);
+                    $('#listId0').css("text-align", "center"); 
+                    $('#listId0').text('no post yet');
+                }else{
+                    let i = 0 ;
+                    while(content.length !== i){
+                        $('#list'+i).show();
+                        $('#listId'+i).text(content[i].num);
+                        $('#categoryId'+i).text(content[i].category1+'/'+content[i].category2);
+                        $('#titleId'+i).html(content[i].title);
+                        var tDate = new Date(content[i].date);
+                        $('#dateId'+i).text(tDate.getFullYear()+"년 "+(tDate.getUTCMonth()+1)+"월 "+tDate.getUTCDate()+"일 "+tDate.getUTCHours()+":"+tDate.getUTCMinutes());
+                    i+=1;
+                    }
+                    console.log('너혹시 추가되고있니');
+                    $('#pagenationUL').append('<li class="btn_toNumUL" style="float:left;display:table-cell" value="0"><img src="../public/arrow/leftover.png" style="position: relative"></li>');
+                    $('#pagenationUL').append('<li class="btn_toNumUL" style="float:left;display:table-cell" value="'+(curPage-1)+'"><img src="../public/arrow/left.png" style="position: relative"></li>');
+                    for(var j = 0 ; j < pageSize ; j++){
+                        if(j==curPage){
+                            $('#pagenationUM').append('<li class="active" style="float:left;display:table-cell"><a>'+(curPage+1)+'</a></li>');
+                        }else{
+                            $('#pagenationUM').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+j+'"><a>'+(j+1)+'</a></li>')	
+                        }
+                    }
+                    if(curPage == pageSize-1){
+                        $('#pagenationUR').append('<li style="float:left;display:table-cell"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                    }else{
+                        $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(curPage+1)+'"><img src="../public/arrow/right.png" style="position: relative"></li>');
+                    }
+                    $('#pagenationUR').append('<li class="btn_toNum" style="float:left;display:table-cell" value="'+(pageSize-1)+'"><img src="../public/arrow/rightover.png" style="position: relative"></li>');
+                    $('.btn_toNum').on('click',function(){
+                        console.log($(this).val());
+                        $(this).changeListFunc($(this).val());
+                    }); 
+                    $('.btn_toNumUL').on('click',function(){
+                        console.log($(this).val());
+                        $(this).changeListFunc($(this).val());
+                    });     
+                }
+            },
+            error : function(){
+                console.log('req readPost failed');
+                $('#list0').show();
+                $('#listId0').attr('colspan',4);
+                $('#listId0').css("text-align", "center"); 
+                $('#listId0').text('loading post failed!');
+            }
+        });
+    });
+    
+
+</script>
+
+<div class="row">
+    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " style="" id="mainNav">
+        <div class="row align-content-center margin-maindiv lesspadding">
+            <table class="col-12 table table-hover ">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>category</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="display:none" id='list0' onclick="clickPost(0)">
+                        <th id="listId0"></th>
+                        <th id="categoryId0"></th>
+                        <th><a id="titleId0"></a></th>
+                        <th id="dateId0"></th>
+                    </tr>
+                    <tr style="display:none" id='list1' onclick="clickPost(1)">
+                        <th id="listId1"></th>
+                        <th id="categoryId1"></th>
+                        <th><a id="titleId1"></a></th>
+                        <th id="dateId1"></th>
+                    </tr>
+                    <tr style="display:none" id='list2' onclick="clickPost(2)">
+                        <th id="listId2"></th>
+                        <th id="categoryId2"></th>
+                        <th><a id="titleId2"></a></th>
+                        <th id="dateId2"></th>
+                    </tr>
+                    <tr style="display:none" id='list3' onclick="clickPost(3)">
+                        <th id="listId3"></th>
+                        <th id="categoryId3"></th>
+                        <th><a id="titleId3"></a></th>
+                        <th id="dateId3"></th>
+                    </tr>
+                    <tr style="display:none" id='list4' onclick="clickPost(4)">
+                        <th id="listId4"></th>
+                        <th id="categoryId4"></th>
+                        <th><a id="titleId4"></a></th>
+                        <th id="dateId4"></th>
+                    </tr>
+                    <tr style="display:none" id='list5' onclick="clickPost(5)">
+                        <th id="listId5"></th>
+                        <th id="categoryId5"></th>
+                        <th><a id="titleId5"></a></th>
+                        <th id="dateId5"></th>
+                    </tr>
+                    <tr style="display:none" id='list6' onclick="clickPost(6)">
+                        <th id="listId6"></th>
+                        <th id="categoryId6"></th>
+                        <th><a id="titleId6"></a></th>
+                        <th id="dateId6"></th>
+                    </tr>
+                    <tr style="display:none" id='list7' onclick="clickPost(7)">
+                        <th id="listId7"></th>
+                        <th id="categoryId7"></th>
+                        <th><a id="titleId7"></a></th>
+                        <th id="dateId7"></th>
+                    </tr>
+                    <tr style="display:none" id='list8' onclick="clickPost(8)">
+                        <th id="listId8"></th>
+                        <th id="categoryId8"></th>
+                        <th><a id="titleId8"></a></th>
+                        <th id="dateId8"></th>
+                    </tr>
+                    <tr style="display:none" id='list9' onclick="clickPost(9)">
+                        <th id="listId9"></th>
+                        <th id="categoryId9"></th>
+                        <th><a id="titleId9"></a></th>
+                        <th id="dateId9"></th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row align-content-center margin-maindiv lesspadding" >
+            <div class="col-12 col-centered">
+                <ul class="pagination"  id="pagenationUL"></ul>
+                <ul class="pagination"  id="pagenationUM"></ul>
+                <ul class="pagination"  id="pagenationUR"></ul>
+            </div>
+        </div>
+    </nav>
+    <% include rightnavbar %>
+</div>
+<%include footer%>	
+</html>

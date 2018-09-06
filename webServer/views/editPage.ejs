@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include header %>
+<body class="container align-content-center" style="background-color: #ebe7e7">
+<%include navbar %>
+<script src="trumbowyg/dist/trumbowyg.min.js"></script>
+<link rel="stylesheet" href="trumbowyg/dist/ui/trumbowyg.min.css">
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#editor').trumbowyg();
+        
+        $('#selMain' ).change(function(){   //ajax call sub categoryies function
+            var selPostType = $('#selMain option:selected').val();
+            if(selPostType==='NULL'){
+                $('#selSub1').find('option:gt(1)').remove();
+                $('#selSub2').find('option:gt(1)').remove();
+                return;
+            }
+            $.ajax({
+                type : 'post',
+                url : '/loadSubCateAll', /*0 is blog , 1 is code*/
+                data : {
+                    'postType' : selPostType
+                },
+                dataType : 'JSON', /*
+                                    {
+	                                    "Cat1": [
+                                                    "test1", "test2"
+                                        ],
+	                                    "Cat2": [
+                                                    "test3", "test4"
+                                        ]
+                                    }
+                                    selSub1,selSub2 option
+                                    */
+                success : function(data){
+                    let jsonData = JSON.parse(data);
+                    $('#selSub1').find('option:gt(1)').remove();
+                    $('#selSub2').find('option:gt(1)').remove();
+                    if(jsonData.cat1.length !== 0){
+                        for(var i = 0 ; i < jsonData.cat1.length ; i++){
+                            $('#selSub1').append('<option>'+jsonData.cat1[i]+'</option>');
+                        }
+                    }if(jsonData.cat2.length !== 0){
+                        for(var i = 0 ; i < jsonData.cat2.length ; i++){
+                            $('#selSub2').append('<option>'+jsonData.cat2[i]+'</option>');
+                        }
+                    }
+                },
+                statusCode : {
+                    201 : function(){
+                        console.log('status code 201 success');
+                    },
+                    400 : function(){
+                        console.log('status 400 unsolved err');
+                    }
+                    //more statuscode might help
+                },
+                error : function(request,status,error){
+                    console.log('AJAX failed : appendPost  ');
+                    alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                }
+            });
+        });
+        $('#selSub1' ).change(function(){   //sub1 menu call function
+            var sub = this;
+            if(sub.options[sub.selectedIndex].value === 'addSub'){
+                $('#selDiv1').append('<input type="text" class="form-control" id="inputselSub1"/>');
+            }else{
+                if($('#inputselSub1').length)
+                    $('#inputselSub1').remove();
+            }
+        });
+        $('#selSub2' ).change(function(){   //sub2 menu call function
+            var sub = this;
+            if(sub.options[sub.selectedIndex].value === 'addSub'){
+                $('#selDiv2').append('<input type="text" class="form-control" id="inputselSub2"/>');
+            }else{
+                if($('#inputselSub2').length)
+                    $('#inputselSub2').remove();
+            }
+        });
+        $('#uploadPost').click(function(){  //ajax post upload function
+            if($('#selMain option:selected').val()==='NULL'){
+                alert('Select Main Category first');
+                return;
+            }else if($('#selSub1 option:selected').val()==='NULL'){
+                alert('Select Sub1 Category first');
+                return;
+            }else if($('#selSub2 option:selected').val()==='NULL' ){
+                alert('Select Sub2 Category first');
+                return;
+            }else if($('#editor').html()===''){
+                alert('Context is Empty');
+                return;
+            }else if($('#title').val()===''){
+                alert('Title is Empty');
+                return;
+            }
+            
+            let thumbnailImg = ($('#editor').find('img').first()).attr('src');//썸네일용
+            let mainCategory = $('#selMain option:selected').text();
+            let subCategory1 = $('#selSub1 option:selected').val();
+            let subCategory2 = $('#selSub2 option:selected').val();
+            let contextText = $('#editor').html();
+            let thumbnailText = $('#editor').text().substring(0,120);
+            let title =  $('#title').val();
+            
+            if($('#selSub1 option:selected').val()==='addSub')
+                subCategory1 = $('#inputselSub1').val();
+            if($('#selSub2 option:selected').val()==='addSub')
+                subCategory2 = $('#inputselSub2').val();
+                
+            $.ajax({        //not made router yet
+            type : 'post',
+            url : '/appendPost',
+            data: {
+                'mainCategory'  : mainCategory,
+                'subCategory1'  : subCategory1,
+                'subCategory2'  : subCategory2,
+                'contextText'   : contextText,
+                'title'         : title,
+                'thumbnailImg'  : thumbnailImg,
+                'thumbnailText' : thumbnailText
+            },
+            success : function(data){
+                console.log('success');
+                alert('Post upload Successfuly');
+                window.history.back();
+            },
+            statusCode : {
+                201 : function(){
+                    console.log('status code 201 success');
+                },
+                400 : function(){
+                    console.log('status 400 unsolved err');
+                }
+            },
+            error : function(request,status,error){
+                console.log('AJAX failed : appendPost  ');
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+            }
+        });
+        })
+    });
+</script>
+
+<div class="row">
+    <nav class="col-lg-9 col-md-12 container align-content-center lesspadding-right-mainnav " id="mainNav">
+        <div class="row col-12 align-content-center margin-maindiv margin-light-topbottom">
+            <div class="row col-12">
+                <div class="row col-12">
+                    <div class="col-lg-4 col-md-12 form-group">  
+                        <label for="sel1">Main Category*</label>
+                        <select class="form-control form-height-3" id="selMain">
+                            <option value="NULL" selected>Choose</option>
+                            <option value="0">Blog</option>
+                            <option value="1">Code</option>
+                        </select>
+                    </div>                                
+                    <div class="col-lg-4 col-md-12 form-group"id="selDiv1">
+                        <label for="sel1">Sub1 Category*</label>
+                        <select class="form-control form-height-3" id="selSub1">
+                            <option value="NULL" selected>Choose</option>
+                            <option value="addSub">Add new..</option>
+                        </select>                             
+                    </div>
+                    <div class="col-lg-4 col-md-12 form-group" id="selDiv2">
+                        <label for="sel1">Sub2 Category*</label>
+                        <select class="form-control form-height-3" id="selSub2">
+                            <option value="NULL" selected>Choose</option>
+                            <option value="addSub">Add new..</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row col-12">
+                    <div class="offset-lg-1 col-lg-10 col-12">
+                        <label>Title*</label>
+                    </div>
+                    <div class="offset-lg-1 col-lg-10 col-12">
+                        <input type="text" class="form-control" id="title"/>
+                    </div>
+                </div>
+                <div class="row col-12 align-content-center " id="editor"></div>
+                <div class="row align-content-center testcls margin-light-bottom">
+                    <div class="col-12">
+                        <button id="uploadPost" class="form-control">submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </nav>
+    <% include rightnavbar %>
+</div>
+    <script src="trumbowyg/dist/trumbowyg.js"></script>
+<%include footer%>	
+</html>
