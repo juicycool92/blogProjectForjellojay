@@ -1,4 +1,4 @@
-module.exports = (app,jsonCreator,User,passport)=>{
+module.exports = (app,jsonCreator,User,passport,socketRoutes)=>{
     //회원가입
     app.post('/Signin',(req,res)=>{
         User.findOne(req.body.reqId,(err,user,isNull)=>{
@@ -51,5 +51,11 @@ module.exports = (app,jsonCreator,User,passport)=>{
     app.post('/isUserReadyFaceAuth',(req,res)=>{
         res.json({"isReady":true,"userId":req.body.userId});
         res.send();
+    });
+    app.post('/authFace',(req,res)=>{
+        //send res image to authServer and wait for result.
+        //socketRoutes.testConnection({req,res},"hello from web!");
+        socketRoutes.authFace([req,res],req.body.userId,req.body.userImg);
+
     });
 };

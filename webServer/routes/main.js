@@ -1,8 +1,11 @@
-module.exports = (app,counterModule,mainModule,jsonCreator,passport,io)=>
+module.exports = (app,counterModule,mainModule,jsonCreator,passport,io,authServerSocket)=>
 {
 	app.get('/',(req,res)=>
 	{	//메인 페이지 로드
-	    res.render('index');
+		res.render('index');
+		var testServerSocket = require('socket.io-client')('http://localhost:3000');
+		
+		//authServerSocket.callTest(req.sessionID);
 	});
 
 	app.post('/',(req,res)=>

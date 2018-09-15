@@ -50,6 +50,7 @@ https.listen(443,()=>{
     console.log('server ist up');
 });
 */
+const authServerSocket = require('./modules/authServerModule.js');
 var User = require('./modules/User.js');
 var passportModule = require('./modules/passportModule.js')(passport,User);
 var blogModule = require('./modules/blogModule.js');
@@ -57,12 +58,15 @@ var codeModule = require('./modules/codeModule.js');
 var jsonCreator = require('./modules/jsonCreator.js');
 var replyModule = require('./modules/replyModule.js');
 var mainModule = require('./modules/mainModule.js');
-var socketModule = require('./modules/socketModule.js');
-var socketRoutes = require('./routes/socketRoutes.js')(app,io,socketModule,User);
-var main = require('./routes/main.js')(app,counterModule,mainModule,jsonCreator,passport,/*forTest delete when not use*/io);
+//var socketModule = require('./modules/socketModule.js');
+//var socketRoutes = require('./routes/socketRoutes.js');
+var main = require('./routes/main.js')(app,counterModule,mainModule,jsonCreator,passport,/*forTest delete when not use*/io,authServerSocket);
 var board = require('./routes/board.js')(app,blogModule,codeModule,jsonCreator);
 var blog = require('./routes/blog.js')(app,blogModule,jsonCreator);
 var code = require('./routes/code.js')(app,codeModule,jsonCreator);
 var reply = require('./routes/reply.js')(app,replyModule,jsonCreator);
-var account = require('./routes/account.js')(app,jsonCreator,User,passport);
+var account = require('./routes/account.js')(app,jsonCreator,User,passport,authServerSocket);
 var admin = require('./routes/admin.js')(app,mainModule,jsonCreator);
+
+
+

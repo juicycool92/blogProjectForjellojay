@@ -8,6 +8,8 @@
     var facialAttempUserId;
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
+    var loginSign,signSign,authSign;
+    /*
     socket.on('facialAuthRes',(bIsSuccess)=>{
         if(isFaceAuthSuccess){
             alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"Auth successfully");
@@ -19,6 +21,7 @@
             faceAuthCommManager();
         }
     });
+    */
     const _ALERT = { 
                         "STATUS" : {
                             "TRUE":"alert-success","FALSE":"alert-danger","INFO":"alert-info"
@@ -28,7 +31,7 @@
                         }
                     };
     
-    var loginSign,signSign,authSign;
+
     function faceAuthCommManager(){
         context.drawImage(video,0,0,context.width,context.height);
         //let canvas = new canvas();
@@ -37,6 +40,12 @@
         socket.emit('facialAuth',document.getElementById('faceAuthID').value,containerImage);    
         console.log('send auth')
     }
+    function getheringCurImage(){
+        context.drawImage(video,0,0,context.width,context.height);
+        return canvas.toDataURL('image/webp');
+    }
+
+    //below three function is only made for alerting // 
     function deleteAlertClass(targetObject){
         if(targetObject.classList.contains(_ALERT.STATUS.TRUE)){
             targetObject.classList.remove(_ALERT.STATUS.TRUE);
@@ -92,6 +101,7 @@
             }
         }
     }
+    ///////////////////////////////////////////////////
 
     const adminFunc = { //check this account is admin / display admin menu if this authed account is admin
         isAdmin : (userId)=>{
@@ -139,8 +149,9 @@
                         canvas.height = video.videoHeight;
                         context.height = video.videoHeight;
                         video.play();
-                        //$(this).faceAuthCommManager();
-                        faceAuthCommManager();
+                        //faceAuthCommManager();//this is original start points.
+                        const sendImg = getheringCurImage();
+                        $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
                     }
                 }).catch(e =>{
@@ -181,6 +192,50 @@
                     break;
                 }
             }
+        }
+        $.fn.ajaxCall_faceAuth = (userId,userImg)=>{
+            console.log('ajax call face auth is activated ::'+userImg)
+            $.ajax({
+                type : "POST",
+                url : "/authFace",
+                data : {
+                    "userId" : userId,
+                    "userImg" : userImg
+                },
+                dataType : "JSON",
+                success : (data)=>{
+                    console.log(data);
+                    console.log('SUCCESS!!!')
+                    alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"auth Successfully");
+                    //if(data.isSuccess)
+                },
+                statusCode : {                    
+                    300 : (data)=>{
+                        //alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"user not exist!");
+                        console.log(`300 code ${data}`);
+                        
+                        setTimeout(function(){
+                            $(this).ajaxCall_faceAuth(userId,userImg);
+                        },10000);
+                        
+                        //startFaceAuth();//not created yet
+                    },
+                    401 : (data)=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"faceAuth failed");
+                        console.log(`401 code ${data}`)
+                        return;
+                    },
+                    500 : (data)=>{
+                        console.log(`500 code ${data}`)
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
+                    },
+                },
+                error : (data)=>{
+                    console.log(`err ${data}`)
+                    return;
+                    //alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"error!!!");
+                }
+            });
         }
         $.fn.ajaxCall_isUserReadyFaceAuth = userId=>{
             $.ajax({
