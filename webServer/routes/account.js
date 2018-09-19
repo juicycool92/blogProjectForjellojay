@@ -54,7 +54,6 @@ module.exports = (app,jsonCreator,User,passport,socketRoutes)=>{
     });
     app.post('/authFace',(req,res)=>{
         //send res image to authServer and wait for result.
-        //socketRoutes.testConnection({req,res},"hello from web!");
         socketRoutes.authFace([req,res],req.body.userId,req.body.userImg);
 
     });

@@ -194,6 +194,7 @@
             }
         }
         $.fn.ajaxCall_faceAuth = (userId,userImg)=>{
+            userImg = getheringCurImage();
             console.log('ajax call face auth is activated ::'+userImg)
             $.ajax({
                 type : "POST",
@@ -216,7 +217,8 @@
                         
                         setTimeout(function(){
                             $(this).ajaxCall_faceAuth(userId,userImg);
-                        },10000);
+                            console.log('요청 제전송!');
+                        },1000);
                         
                         //startFaceAuth();//not created yet
                     },
@@ -229,9 +231,13 @@
                         console.log(`500 code ${data}`)
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
                     },
+                    503 : (data)=>{
+                        console.log(`503 code ${data}`)
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"request timeout!");
+                    },
                 },
                 error : (data)=>{
-                    console.log(`err ${data}`)
+                    console.log(`err ${data.status}`);
                     return;
                     //alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"error!!!");
                 }

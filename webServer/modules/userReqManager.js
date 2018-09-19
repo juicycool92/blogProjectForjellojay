@@ -3,7 +3,10 @@
 
 var useReqManager = module.exports = function(){
     this.reqMap = new Map();
-    this.EXPLIMIT = 1000;
+    this.EXPLIMIT = 120000;
+}
+function logMapElements(value, key, map) {
+    console.log(`K[${key}]`);
 }
 useReqManager.prototype = {
     map : function(){return this.reqMap},
@@ -19,7 +22,7 @@ useReqManager.prototype = {
     },
     setKV : function(value){
         value[1].REGISTEDDATE = new Date();
-        this.reqMap.set(value[0].sessionID,value[1]);
+        this.reqMap.set(value[0].sessionID,{req : value[1], res : value[0]});
     },
     getValue : function(SID){
         return this.reqMap.get(SID);
@@ -37,5 +40,9 @@ useReqManager.prototype = {
             throw new Error(e);
         }
         
+    },
+    currentKeys : function(){
+        console.log(`디버그용 맵 체커 동작중 :`)
+        this.reqMap.forEach(logMapElements);
     }
 }

@@ -10,6 +10,15 @@ userInfoArray.prototype = {
             console.log(this.element[i].getLengthOfIMAGES());
         }
     },
+    pop : function(uSID){
+        try{
+            const index = this.element.indexOf(uSID);
+            this.element.splice(index,1);
+            return true;
+        }catch(e){
+            return false;
+        }
+    },
     getObj : function(index){
         //return userObj which is indexing in this array. require int type.
         if( index < this.element.length && index > -1){

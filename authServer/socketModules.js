@@ -231,7 +231,7 @@ const facialDetect = (originalImage,cb)=>{  //(원본이미지)as parameter, ret
         const userCvImage = cv.imdecode(buf);
         const gray = userCvImage.bgrToGray();
         //cv.imshowWait('debug',gray);
-        //cv.destroyAllWindows();
+       // cv.destroyAllWindows();
         const faceRects = classifiers[0].detectMultiScale(gray).objects;
         if(!faceRects.length){
             cb('INFO on socketModules.js facialDetect() : selected image is not detected face, abroated',null);
@@ -263,17 +263,26 @@ const recognizeImage = (reqImg,reqId,cb)=>{
         }
     });
 }
-const recognizeMultipleImage = (reqId,reqImgArr)=>{
+const recognizeMultipleImage = (reqId,reqImgArr,cb)=>{
     var resultSets = new Array();
-    for(var i in reqImgArr.length){
+    for(var i in reqImgArr){
+        console.log('야');
+        cv.imshow(`img[${i}]`,reqImgArr[i]);
+    }
+    cv.waitKey();
+    cv.destroyAllWindows();
+    console.log(`givin reqId is ${reqId}, lets start recognize`);
+    for(var i in reqImgArr){
         const res = myRecognizer.predict(reqImgArr[i]);
-        if(imageS[res.label] === reqId && res.confidence < _MAXIMUM_CONFIDENCE_VALUE){
+        console.log(`recognizer No${i}. ${res.label} == ${imageSetLabelNames[res.label]}? .. and ${res.confidence}`);
+        if(imageSetLabelNames[res.label] === reqId && res.confidence < _MAXIMUM_CONFIDENCE_VALUE){
             resultSets.push(true);
         }else{
             resultSets.push(false);
         }
-        cb(resultSets);
+        
     }
+    return cb(resultSets);
 }
 const recognizeMultipleImageOld = (reqId,cb)=>{
     var resultSets = new Array();
@@ -339,12 +348,12 @@ module.exports.addUserImage=(userId,userImage,cb)=>{
     });
 }
 module.exports.detectFacial = (userImage,cb)=>{
-    facialDetect(userImage,(err)=>{
+    facialDetect(userImage,(err,matImg)=>{
         if(err){
             cb(err,false);
             return;
         }
-        cb(null,true);
+        cb(null,true,matImg);
     });
 }
 const clearArray = (selectedArray)=>{
@@ -352,9 +361,12 @@ const clearArray = (selectedArray)=>{
         selectedArray.pop();
     }
 };
-module.exports.faceAuthWIthImages = (reqId,reqImgArr)=>{
+module.exports.faceAuthWIthImages = (reqId,reqImgArr,cb)=>{
+    console.log(`야 이 시${reqId}`);
     recognizeMultipleImage(reqId,reqImgArr,(resSets)=>{
+        console.log(`raw array : ${resSets}`);
         const result = resSets.filter(res =>res == true );
+        console.log(`filtered array : ${result}`);
         if(result.length > 6){
             cb(null,true,reqId);
         }else{

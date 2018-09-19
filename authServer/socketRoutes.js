@@ -34,12 +34,12 @@ module.exports = (io,socketModules)=>{
                  //curUser.pushImg(userImg);
             }else{//신규 유저의 경우 이 구문을 돌것.
                  curUserImageLen = 0;
-                 socketModules.detectFacial(userImg,(err,isSuccess)=>{ // 얼굴이 인식 가능한가 확인
+                 socketModules.detectFacial(userImg,(err,isSuccess,userMat)=>{ // 얼굴이 인식 가능한가 확인
                     if(err){//얼굴이 아니기 때문에, 이미지는 버리고, 결과를 전송한다.
                         console.log(err);
                         socket.emit('authFace',userId,SID,false,_ERROR_DESCRIPTIONS['_NO_FACIAL']);
                     }else if(isSuccess){//얼굴이지만 갯수는 한개일게 분명하니깐
-                        userInfoArr.push(SID,userImg);//일단 지금 이미지와 유저정보를 저장하고,
+                        userInfoArr.push(SID,userMat);//일단 지금 이미지와 유저정보를 저장하고,
                         socket.emit('authFace',userId,SID,false,_ERROR_DESCRIPTIONS['_NEED_MORE']);//더 추가해야한다고 알린다.
                     }else{
                         console.log(new Error(`[CRITICAL]UNCAUGHT ERROR DETECTED AT DETECTFACIAL FUNCTION`));//알수 없는 문제의 경우 이곳을 방문할 것 인데
@@ -52,11 +52,11 @@ module.exports = (io,socketModules)=>{
 
             //유저 정보가 적어도 하나 등록 되어있는 경우는 아래의 코드를 방문할것
             if(curUserImageLen < _REQUIRE_IMG_LEN_FOR_AUTH ){ //10장 이하의 이미지가 저장된 경우
-                socketModules.detectFacial(userImg,(err,isSuccess)=>{ //10장이 될때까지 추가만 하면 됨.
+                socketModules.detectFacial(userImg,(err,isSuccess,userMat)=>{ //10장이 될때까지 추가만 하면 됨.
                     if(err){
                         socket.emit('authFace',userId,SID,false,_ERROR_DESCRIPTIONS['_NO_FACIAL']);
                     }else if(isSuccess){
-                        curUser.pushImg(userImg); //얼굴이 인식되면 해당 유저의 이미지를 추가 한다.
+                        curUser.pushImg(userMat); //얼굴이 인식되면 해당 유저의 이미지를 추가 한다.
                         socket.emit('authFace',userId,SID,false,_ERROR_DESCRIPTIONS['_NEED_MORE']);
                     }else{
                         console.log(new Error(`[CRITICAL]UNCAUGHT ERROR DETECTED AT DETECTFACIAL FUNCTION`));
@@ -64,6 +64,7 @@ module.exports = (io,socketModules)=>{
                     }
                 });
             }else if(curUserImageLen >= _REQUIRE_IMG_LEN_FOR_AUTH){ //10장 혹은 이상이 모였을 경우에 여기로
+                console.log('열장 모았워요!!');
                 socketModules.faceAuthWIthImages(userId,curUser.getIMAGES(),(err,isSuccess,resId)=>{ //이제 얼굴 인식을 시작한다.
                     if(err || !isSuccess){ //에러 발생시
                         err ? console.log(err) : console.log(new Error('[CRITICAL]socketModules.faceAuthWithImages() failed without error !!!'));
@@ -71,6 +72,11 @@ module.exports = (io,socketModules)=>{
                         //완전히 인식이 시작되었고, 실패로 끝이났다. 더이상 인식 요청이 불필요하다는것을 알려줄것.
                     }else if(resId ===userId){//정확히 일치한 경우에는
                         socket.emit('authFace',userId,SID,true,null); // 성공했음을 알려준다.
+                    }
+                    if(!userInfoArr.pop(SID)){
+                        console.log('delete usdrInfoArr is failed!!');
+                    }else{
+                        console.log(`usdrInfoArr [${SID}] is deleted!!`);
                     }
                 });
             }else{

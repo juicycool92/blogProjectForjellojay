@@ -1,5 +1,7 @@
 //require('throw-max-listeners-error');
 var express = require('express');
+var timedout = require('connect-timeout');
+
 var app = express();
 var path = require('path');
 const session = require('express-session')({
@@ -24,6 +26,8 @@ app.set('trust proxy', 1) // trust first proxy
 
 app.set('views',path.resolve(__dirname,'views'));
 app.set('view engine','ejs');
+app.use(timedout(120000));
+app.use(haltOnTimedout);//타임아웃 설정! 27번 라인과 함께 추가됨!(default is 20 second)
 app.use(express.static(path.join(__dirname,"static")));
 app.use(session);
 
@@ -69,4 +73,7 @@ var account = require('./routes/account.js')(app,jsonCreator,User,passport,authS
 var admin = require('./routes/admin.js')(app,mainModule,jsonCreator);
 
 
+function haltOnTimedout(req,res,next){
+    if(!req.timedout) next();
+}
 
