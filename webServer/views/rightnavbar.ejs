@@ -130,7 +130,17 @@
     }
 
     $(function(){   
-        
+        $.fn.loginAfterCall = (curUser)=>{
+            gloUserId = curUser;
+            alertToggle(false,'notLogin-div');
+            alertToggle(true,'Login-div');
+            $('#loginUser-p').text(curUser);
+            if(adminFunc.isAdmin(curUser)){
+                adminFunc.activeAdminMenu(true);
+            }else{
+                adminFunc.activeAdminMenu(false);
+            }
+        }
         $.fn.initCam = ()=>{
             video = document.getElementById('video');
             constraints = {
@@ -208,6 +218,7 @@
                     console.log(data);
                     console.log('SUCCESS!!!')
                     alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"auth Successfully");
+                    $(this).loginAfterCall(userId);
                     //if(data.isSuccess)
                 },
                 statusCode : {                    
@@ -363,16 +374,18 @@
                                 console.log(data.message);
                                 //추가작업을 여기부터 작성할것
                                 $("#LoginModal .close").click()
-                                gloUserId = reqId;
-                                alertToggle(false,'notLogin-div');
-                                alertToggle(true,'Login-div');
-                                $('#loginUser-p').text(reqId)
-                                 ;
-                                if(adminFunc.isAdmin(reqId)){
-                                    adminFunc.activeAdminMenu(true);
-                                }else{
-                                    adminFunc.activeAdminMenu(false);
-                                }
+                                // gloUserId = reqId;
+                                // alertToggle(false,'notLogin-div');
+                                // alertToggle(true,'Login-div');
+                                // $('#loginUser-p').text(reqId)
+                                //  ;
+                                // if(adminFunc.isAdmin(reqId)){
+                                //     adminFunc.activeAdminMenu(true);
+                                // }else{
+                                //     adminFunc.activeAdminMenu(false);
+                                // }
+                                //로그인 이후 함수 이따 넣자
+                                $(this).loginAfterCall(reqId);
                             },
                             400 : function(data){
                                 alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.FALSE,data.responseJSON.message);

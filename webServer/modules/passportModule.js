@@ -1,4 +1,5 @@
 const LocalStrategy = require('passport-local').Strategy; //로컬 전략
+const CustomStrategy = require('passport-custom').Strategy;
 module.exports = (passport,User)=>{     //req.logIn 시 실행되는 함수
     passport.serializeUser((user,done)=>{//called when strategy is successful
         done(null,user);//var user will be used first attribute for deserializeUser
@@ -8,6 +9,21 @@ module.exports = (passport,User)=>{     //req.logIn 시 실행되는 함수
             done(null,users);    //var user will be send as req.user
         });
     });
+    passport.use('faceAuth',new CustomStrategy(
+        (reqId,cb)=>{
+            User.findOne(reqId,(findErr,user)=>{
+                if(findErr){    //server side error
+                    return cb(findErr,null,{message:'Server connection failed!'});   
+                }
+                else if(!user){      //account is not exist error, returning with msg
+                    return cb(null,null,{message:'ID not exist'});
+                }
+                else{
+                    return cb(null,user);
+                }
+            });
+        }
+    ));
 
     passport.use('local',new LocalStrategy({ // start of LocalStrategy.
         usernameField: 'reqId',

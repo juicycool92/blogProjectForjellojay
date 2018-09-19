@@ -1,6 +1,6 @@
 var userInfoArray = module.exports = function(){
     this.element = new Array();
-    this.EXPLIMIT = 100000;
+    this.EXPLIMIT = 120000;
 }
 userInfoArray.prototype = {
     push : function(uSID,uImgs){

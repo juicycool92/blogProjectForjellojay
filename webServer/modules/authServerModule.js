@@ -1,97 +1,111 @@
 const authServer = require('socket.io-client')('http://localhost:3000');
 const userReqManager = require('./userReqManager.js');
 let userReqArr = new userReqManager();//this class is for returning response who is send request.
-setTimeout( function cleaner(){ 
+let passport = require('passport');
+setTimeout(function cleaner() {
     const result = userReqArr.expireCheck(new Date());
     result ? console.log(result) : '';
-    setTimeout(cleaner,5000);
-},5000);
-setTimeout( function mapChecker(){ 
+    setTimeout(cleaner, 5000);
+}, 5000);
+setTimeout(function mapChecker() {
     userReqArr.currentKeys();
-    setTimeout(mapChecker,2000);
-},2000);
+    setTimeout(mapChecker, 2000);
+}, 2000);
 //this is userReqManager cleanning function. in depends on your computer spec, feel free to change repeat time
 
-authServer.on('connect',()=>{
+
+authServer.on('connect', () => {
     console.log('server connected');
-    module.exports.testConnection = (reqStatus,message)=>{  //this is test func
+    module.exports.testConnection = (reqStatus, message) => {  //this is test func
         userReqArr.setKV(reqStatus);
-        authServer.emit('testConnection',message,reqStatus.req.sessionID);
+        authServer.emit('testConnection', message, reqStatus.req.sessionID);
     }
-    module.exports.authFace = (reqStatus,userId,userImg)=>{
+
+    module.exports.authFace = (reqStatus, userId, userImg) => {
         //이미 맵에 해당 Key가 있는지 확인
         //이미 있다면 버리자. 
-        if(userReqArr.getValue(reqStatus[0].sessionID)){
+        if (userReqArr.getValue(reqStatus[0].sessionID)) {
             console.log(`reqeust is already exist!! drop it!`);
             return;
-        }else{
+        } else {
             console.log(`reqeust is not exist, request send`);
             userReqArr.setKV(reqStatus);
-            authServer.emit('authFace',userId,userImg,reqStatus[0].sessionID);
+            authServer.emit('authFace', userId, userImg, reqStatus[0].sessionID);
         }
     }
-    authServer.on('testConnection',(data,SID)=>{
+
+    authServer.on('testConnection', (data, SID) => {
         const resTarget = userReqArr.getValue(SID);
-        if(resTarget){
-            resTarget.send(data);    
+        if (resTarget) {
+            resTarget.send(data);
         }
-        else{
+        else {
             console.log(`request user[ ${SID} ] is not in MAP !!! drop result!`)
         }
     });
-    authServer.on('authFace',(userId,SID,isSuccess,err)=>{
+
+    authServer.on('authFace', (userId, SID, isSuccess, err) => {
         const resTarget = userReqArr.getValue(SID);
-        
         console.log(`result is arrived, userId : [${userId}], SID : [${SID}], isSuccess? [${isSuccess}] Error? : [${err}]`);
-        
-        
-        if(isSuccess){  //인증에 성공한 겨웅 in case of auth is successfully.
+
+        if (isSuccess) {  //인증에 성공한 겨웅 in case of auth is successfully.
             //send back with auth info here!!!
             console.log('인증 성공 했떠요 !!!');
-            resTarget[0].logIn(userId,(err)=>{
-                if(err){
-                    console.log(`error on authServerModule.js auth!!!`);
+            passport.authenticate('faceAuth',(err,user,info)=>{
+                if(err || !user){//unhandled에러res.status(400).json(info);
+                    if(!info){
+                        resTarget.res.status(400).json({message:"Unexpect error"});
+                    }else{
+                        resTarget.res.status(400).json({message:info});
+                    }
                 }else{
-                    resTarget.status(200).json({isSuccess : true, message : null});
+                    resTarget.req.logIn(user,(err)=>{
+                        if (err) {
+                            console.log(`error on authServerModule.js auth!!!`);
+                        } else {
+                            console.log('login attemp : ' + resTarget.req.user);
+                            resTarget.res.status(200).json({ isSuccess: true, message: null });
+                        }
+                    });
                 }
-            });
-            
-        }else{  //인증에 실패한 경우 in case of auth is failed.
-            try{
-                switch(err[0]){
-                    case 0 : {//require more request for image
+                return;
+            })(userId);
+        } else {  //인증에 실패한 경우 in case of auth is failed.
+            try {
+                switch (err[0]) {
+                    case 0: {//require more request for image
                         console.log(`switch case 0`)
-                        resTarget.status(300).json({isSuccess : false, message : err[1]});
+                        resTarget.res.status(300).json({ isSuccess: false, message: err[1] });
                         break;
                     }
-                    case 1 : {//image detecting failed
+                    case 1: {//image detecting failed
                         console.log(`switch case 1`)
-                        resTarget.status(300).json({isSuccess : false,message : err[1]});
+                        resTarget.res.status(300).json({ isSuccess: false, message: err[1] });
                         break;
                     }
-                    case 2 : {//server internal error
+                    case 2: {//server internal error
                         console.log(`switch case 2`)
-                        resTarget.status(500).json({isSuccess : false,message : err[1]});
+                        resTarget.res.status(500).json({ isSuccess: false, message: err[1] });
                         break;
                     }
-                    case 3 : {
+                    case 3: {
                         console.log(`switch case 3`)
-                        resTarget.status(401).json({isSuccess : false, message : err[1]});
+                        resTarget.res.status(401).json({ isSuccess: false, message: err[1] });
                         break;
                     }
-                    default : {
+                    default: {
                         console.log("[CRITICAL] server got undefined error on communicate with authServer 'authFace' ");
                         break;
                     }
                 }
-            }catch(e){
+            } catch (e) {
                 console.log(`trying to response [${SID}], but its already sent! WTH?`);
             }
-            
+
         }
-        try{
+        try {
             userReqArr.removeReq(SID);
-        }catch(e){
+        } catch (e) {
             console.log('[WARN] selected req is not in array. might be cleaned by cleaner function');
         }
         return;

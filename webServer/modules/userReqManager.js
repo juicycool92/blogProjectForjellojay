@@ -13,7 +13,7 @@ useReqManager.prototype = {
     expireCheck : function(curDate){
         let nCount = 0;
         this.reqMap.forEach((value,key,reqMap) => {
-            if(curDate.getTime() - value.REGISTEDDATE.getTime() > this.EXPLIMIT ){
+            if(curDate.getTime() - value.res.REGISTEDDATE.getTime() > this.EXPLIMIT ){
                 this.reqMap.delete(key);
                 nCount +=1;
             }
@@ -22,7 +22,8 @@ useReqManager.prototype = {
     },
     setKV : function(value){
         value[1].REGISTEDDATE = new Date();
-        this.reqMap.set(value[0].sessionID,{req : value[1], res : value[0]});
+        this.reqMap.set(value[0].sessionID,{req : value[0], res : value[1]});
+        //this is newly added
     },
     getValue : function(SID){
         return this.reqMap.get(SID);
