@@ -82,4 +82,7 @@ module.exports = (app,counterModule,mainModule,jsonCreator,passport,io,authServe
 	{
 		res.render('testPageIOS');
 	})
+	app.get(`/infoMain`,(req,res)=>{
+		res.render('infoSettingmain');
+	});
 }

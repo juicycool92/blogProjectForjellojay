@@ -1,113 +1,106 @@
 const authServer = require('socket.io-client')('http://localhost:3000');
 const userReqManager = require('./userReqManager.js');
+const passport = require('passport');
+
 let userReqArr = new userReqManager();//this class is for returning response who is send request.
-let passport = require('passport');
+
 setTimeout(function cleaner() {
     const result = userReqArr.expireCheck(new Date());
     result ? console.log(result) : '';
     setTimeout(cleaner, 5000);
 }, 5000);
+//this is userReqManager cleanning function. in depends on your computer spec, feel free to change repeat time
+
 setTimeout(function mapChecker() {
     userReqArr.currentKeys();
     setTimeout(mapChecker, 2000);
 }, 2000);
-//this is userReqManager cleanning function. in depends on your computer spec, feel free to change repeat time
-
+//this is userReqManager checker, when its not need anymore, remove it for batter performance.
+// THIS IS KEEP STACK EVENT INTO EVENT EMITTER. IT WILL CAUSE SERVER PERFORMANCE ISSUE.
+// REMOVE IT WHEN MONITOR IS NOT NEED ANYMORE ! ! !
 
 authServer.on('connect', () => {
-    console.log('server connected');
-    module.exports.testConnection = (reqStatus, message) => {  //this is test func
-        userReqArr.setKV(reqStatus);
-        authServer.emit('testConnection', message, reqStatus.req.sessionID);
-    }
-
+    console.log(`[INFO][${new Date().toUTCString()}]authServer connected and ready up`);
     module.exports.authFace = (reqStatus, userId, userImg) => {
-        //이미 맵에 해당 Key가 있는지 확인
-        //이미 있다면 버리자. 
-        if (userReqArr.getValue(reqStatus[0].sessionID)) {
-            console.log(`reqeust is already exist!! drop it!`);
-            return;
-        } else {
-            console.log(`reqeust is not exist, request send`);
+        if (!userReqArr.getValue(reqStatus[0].sessionID)) {
             userReqArr.setKV(reqStatus);
-            authServer.emit('authFace', userId, userImg, reqStatus[0].sessionID);
+            return authServer.emit('authFace', userId, userImg, reqStatus[0].sessionID);
         }
+        reqStatus[1].status(412).json({message:"server busy"});
+        console.log(`[CRITICAL][authServerModule.js][authFace]user request before got response preview's request. REJECTED`);
+        return;
     }
-
-    authServer.on('testConnection', (data, SID) => {
-        const resTarget = userReqArr.getValue(SID);
-        if (resTarget) {
-            resTarget.send(data);
-        }
-        else {
-            console.log(`request user[ ${SID} ] is not in MAP !!! drop result!`)
-        }
-    });
+    /*
+        this function cause called in account routes.
+        this is very first stage for face auth. 
+        check if current user already request to face auth, it's drop current request.
+        because auth server are already busy for auth this user. 
+        authServers are not accept request sametime before responde preview's request.
+    */
 
     authServer.on('authFace', (userId, SID, isSuccess, err) => {
         const resTarget = userReqArr.getValue(SID);
-        console.log(`result is arrived, userId : [${userId}], SID : [${SID}], isSuccess? [${isSuccess}] Error? : [${err}]`);
-
-        if (isSuccess) {  //인증에 성공한 겨웅 in case of auth is successfully.
-            //send back with auth info here!!!
-            console.log('인증 성공 했떠요 !!!');
-            passport.authenticate('faceAuth',(err,user,info)=>{
-                if(err || !user){//unhandled에러res.status(400).json(info);
+        if(!resTarget)
+            return console.log(`[CRITICAL][authFace eventListener][${SID}]givin SID is already fulshed!!!`);
+        if (isSuccess) {  //in case of auth is successfully.
+            passport.authenticate('faceAuth',(err,user,info)=>{//give user authenticate.
+                if(err || !user){
+                    //in case of unhandled error.
                     if(!info){
                         resTarget.res.status(400).json({message:"Unexpect error"});
                     }else{
                         resTarget.res.status(400).json({message:info});
                     }
+                    console.log(info);
                 }else{
                     resTarget.req.logIn(user,(err)=>{
                         if (err) {
-                            console.log(`error on authServerModule.js auth!!!`);
+                            console.log(`[CRITICAL][authServerModule.js][req.logIn()]error on authServerModule.js auth!!!`);
                         } else {
-                            console.log('login attemp : ' + resTarget.req.user);
                             resTarget.res.status(200).json({ isSuccess: true, message: null });
                         }
                     });
                 }
                 return;
             })(userId);
-        } else {  //인증에 실패한 경우 in case of auth is failed.
+
+        } else {  //case of auth is failed.
+            
             try {
                 switch (err[0]) {
                     case 0: {//require more request for image
-                        console.log(`switch case 0`)
-                        resTarget.res.status(300).json({ isSuccess: false, message: err[1] });
-                        break;
+                        resTarget.res.status(300).json({ isSuccess: false, message: err[1] }); break;
                     }
                     case 1: {//image detecting failed
-                        console.log(`switch case 1`)
-                        resTarget.res.status(300).json({ isSuccess: false, message: err[1] });
-                        break;
+                        resTarget.res.status(300).json({ isSuccess: false, message: err[1] }); break;
                     }
                     case 2: {//server internal error
-                        console.log(`switch case 2`)
-                        resTarget.res.status(500).json({ isSuccess: false, message: err[1] });
-                        break;
+                        resTarget.res.status(500).json({ isSuccess: false, message: err[1] }); break;
                     }
-                    case 3: {
-                        console.log(`switch case 3`)
-                        resTarget.res.status(401).json({ isSuccess: false, message: err[1] });
-                        break;
+                    case 3: {//rejected cause timed out
+                        resTarget.res.status(401).json({ isSuccess: false, message: err[1] }); break;
                     }
                     default: {
-                        console.log("[CRITICAL] server got undefined error on communicate with authServer 'authFace' ");
-                        break;
+                        console.log("[CRITICAL] server got undefined error on communicate with authServer 'authFace' "); break;
                     }
                 }
+                resTarget.res.send();
             } catch (e) {
-                console.log(`trying to response [${SID}], but its already sent! WTH?`);
+                console.log(`[CRITICAL][authServerModule.js][authFace event]trying to response [${SID}], but its already sent! WTH?`);
             }
 
         }
-        try {
+        try {//failed or not, this request are done for use and responsed. clearing userReqArr for another request.
             userReqArr.removeReq(SID);
         } catch (e) {
             console.log('[WARN] selected req is not in array. might be cleaned by cleaner function');
         }
         return;
     });
+    /*
+        this socket event is response for face auth. rather than success or failed, web server need to 
+        response back to client for next attemp.
+        if its success, contain new user auth info via passport CustomStrategy.
+        for more info about CustomStrategy, look passportModule.js
+    */
 });

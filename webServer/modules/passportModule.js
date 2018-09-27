@@ -1,14 +1,17 @@
-const LocalStrategy = require('passport-local').Strategy; //로컬 전략
-const CustomStrategy = require('passport-custom').Strategy;
-module.exports = (passport,User)=>{     //req.logIn 시 실행되는 함수
+const LocalStrategy = require('passport-local').Strategy; //localLogin Strategy.
+const CustomStrategy = require('passport-custom').Strategy;//faceAuth Strategy.
+module.exports = (passport,User)=>{
+
     passport.serializeUser((user,done)=>{//called when strategy is successful
         done(null,user);//var user will be used first attribute for deserializeUser
     });
+
     passport.deserializeUser((id,done)=>{   //req.user 시 실행되는 함수.
         User.findOne(id.userid,(findErr,users)=>{
             done(null,users);    //var user will be send as req.user
         });
     });
+
     passport.use('faceAuth',new CustomStrategy(
         (reqId,cb)=>{
             User.findOne(reqId,(findErr,user)=>{
@@ -24,7 +27,14 @@ module.exports = (passport,User)=>{     //req.logIn 시 실행되는 함수
             });
         }
     ));
-
+    /*
+        this function is added in project FaceAuth.
+        call this function for authficate via face recognization/
+        require requestUserId only.
+        THIS IS JUST FOR GIVE PASSPORT, ITS NOT CHECK IN THIS FUNCTION.
+        FACE AUTH IS IN authServerModuel.js
+    */
+   
     passport.use('local',new LocalStrategy({ // start of LocalStrategy.
         usernameField: 'reqId',
         passwordField: 'reqPw',

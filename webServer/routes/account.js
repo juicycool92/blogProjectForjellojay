@@ -27,6 +27,7 @@ module.exports = (app,jsonCreator,User,passport,socketRoutes)=>{
         passport.authenticate('local', {session: true},(err,user,info)=>{
             if(err || !user){//unhandled에러res.status(400).json(info);
                 if(!info){
+                    
                     res.status(400).json({message:"Id or Pw mismatch!"});
                 }else{
                     res.status(400).json({message:"Unexpected Error"});
@@ -48,13 +49,22 @@ module.exports = (app,jsonCreator,User,passport,socketRoutes)=>{
         req.session.destroy();
         res.status(200).json();
     });
-    app.post('/isUserReadyFaceAuth',(req,res)=>{
-        res.json({"isReady":true,"userId":req.body.userId});
-        res.send();
-    });
-    app.post('/authFace',(req,res)=>{
-        //send res image to authServer and wait for result.
-        socketRoutes.authFace([req,res],req.body.userId,req.body.userImg);
 
+    app.post('/isUserReadyFaceAuth',(req,res)=>{
+        User.findOne(req.body.userId,(err,user,isNull)=>{
+            if(isNull==false){
+                res.json({"isReady":true,"userId":req.body.userId});
+            }else{
+                res.json({"isReady":false,"userId":""});
+            }
+            return res.send();
+        });
+        
     });
+    //its not finilized yet.
+
+    app.post('/authFace',(req,res)=>{
+        socketRoutes.authFace([req,res],req.body.userId,req.body.userImg);
+    });
+    //in case of faceAuth, calling authFace function from authServerModule.js
 };

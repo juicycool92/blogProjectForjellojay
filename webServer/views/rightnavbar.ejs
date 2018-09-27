@@ -1,45 +1,16 @@
-<script src="/socket.io/socket.io.js"></script>
+<script src="/js/face.js">
+</script>
 <script type="text/javascript">
-    var gloUserId;//전역유저id
-    var video;
-    var constraints;
-    var socket = io();
-    var isFaceAuthSuccess = false;
-    var facialAttempUserId;
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    var loginSign,signSign,authSign;
-    /*
-    socket.on('facialAuthRes',(bIsSuccess)=>{
-        if(isFaceAuthSuccess){
-            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"Auth successfully");
-        }else if(bIsSuccess){
-            isFaceAuthSuccess = true;
-            console.log('auth success!!');
-        }else{
-            console.log('auth failed');
-            faceAuthCommManager();
-        }
-    });
-    */
-    const _ALERT = { 
-                        "STATUS" : {
-                            "TRUE":"alert-success","FALSE":"alert-danger","INFO":"alert-info"
-                        },
-                        "TYPE" : {
-                            "LOGIN":0,"SIGN":1,"FACEAUTH":2
-                        }
-                    };
-    
-
-    function faceAuthCommManager(){
-        context.drawImage(video,0,0,context.width,context.height);
-        //let canvas = new canvas();
-        const containerImage = canvas.toDataURL('image/webp');
-        //console.log(document.getElementById('faceAuthID').value);
-        socket.emit('facialAuth',document.getElementById('faceAuthID').value,containerImage);    
-        console.log('send auth')
-    }
+    let gloUserId;//전역유저id
+    let video;
+    let constraints;
+    let isFaceAuthSuccess = false;
+    let facialAttempUserId;
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+    let loginSign,signSign,authSign;
+    let mediaDevices;   //this letiable are bind to mediaDevices from $().init() it's control webcam status. 
+   
     function getheringCurImage(){
         context.drawImage(video,0,0,context.width,context.height);
         return canvas.toDataURL('image/webp');
@@ -103,9 +74,11 @@
     }
     ///////////////////////////////////////////////////
 
-    const adminFunc = { //check this account is admin / display admin menu if this authed account is admin
+
+    const adminFunc = { 
+        //check this account is admin / display admin menu if this authed account is admin
         isAdmin : (userId)=>{
-            if(userId==='admin')
+            if(userId==='admin' || userId ==='adminLocal')
                 return true;
             else 
                 return false;
@@ -129,18 +102,30 @@
         }
     }
 
+
     $(function(){   
-        $.fn.loginAfterCall = (curUser)=>{
-            gloUserId = curUser;
-            alertToggle(false,'notLogin-div');
-            alertToggle(true,'Login-div');
-            $('#loginUser-p').text(curUser);
-            if(adminFunc.isAdmin(curUser)){
-                adminFunc.activeAdminMenu(true);
+
+        $.fn.loginMenuManager = (isLogin,curUser)=>{
+            if(isLogin){
+                gloUserId = curUser;
+                alertToggle(false,'notLogin-div');
+                alertToggle(true,'Login-div');
+                $('#loginUser-p').text(curUser);
+                if(adminFunc.isAdmin(curUser)){
+                    adminFunc.activeAdminMenu(true);
+                }else{
+                    adminFunc.activeAdminMenu(false);
+                }
             }else{
+                alertToggle(true,'notLogin-div');
+                alertToggle(false,'Login-div');
                 adminFunc.activeAdminMenu(false);
             }
+            
         }
+        //check auth user. and admin.
+        //displaying login and out menu.
+
         $.fn.initCam = ()=>{
             video = document.getElementById('video');
             constraints = {
@@ -150,6 +135,7 @@
             };
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(mediaStream=>{
+                    mediaDevices = mediaStream;
                     video.srcObject = mediaStream;
                     video.onloadedmetadata = e =>{ 
                         video.style.width = video.videoWidth+"px";
@@ -159,7 +145,6 @@
                         canvas.height = video.videoHeight;
                         context.height = video.videoHeight;
                         video.play();
-                        //faceAuthCommManager();//this is original start points.
                         const sendImg = getheringCurImage();
                         $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
@@ -178,6 +163,7 @@
                 });
             video.setAttribute("playsinline", true);
         }
+
         $.fn.togglefaceAuth = (order,isActivate)=>{
             switch(order){
                 case 1: {
@@ -189,6 +175,7 @@
                     if(isActivate){
                         $('#faceAuth_1_div').hide();
                         $('#faceAuth_2_div').show();
+                        
                         $('#video')[0].style.width = "320px";
                         $('#video')[0].style.height = "240px";
                         $(this).initCam();
@@ -204,6 +191,9 @@
             }
         }
         $.fn.ajaxCall_faceAuth = (userId,userImg)=>{
+            if(!mediaDevices){
+                return console.log(`in ajax call function ${mediaDevices} therefore function stop`);
+            }
             userImg = getheringCurImage();
             console.log('ajax call face auth is activated ::'+userImg)
             $.ajax({
@@ -215,45 +205,44 @@
                 },
                 dataType : "JSON",
                 success : (data)=>{
-                    console.log(data);
                     console.log('SUCCESS!!!')
                     alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"auth Successfully");
-                    $(this).loginAfterCall(userId);
-                    //if(data.isSuccess)
+                    $(this).loginMenuManager(true,userId);
+                    $("#LoginModal .close").click();
+                    $("#FaceAuthModal .close").click();
                 },
                 statusCode : {                    
                     300 : (data)=>{
-                        //alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"user not exist!");
                         console.log(`300 code ${data}`);
-                        
-                        setTimeout(function(){
-                            $(this).ajaxCall_faceAuth(userId,userImg);
-                            console.log('요청 제전송!');
-                        },1000);
-                        
-                        //startFaceAuth();//not created yet
+                        $(this).ajaxCall_faceAuth(userId,userImg);
                     },
                     401 : (data)=>{
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"faceAuth failed");
-                        console.log(`401 code ${data}`)
+                        console.log(`401 code ${data}`);
+                        return;
+                    },
+                    412 : (data)=>{
+                        console.log(`412 code ${data}`);
                         return;
                     },
                     500 : (data)=>{
-                        console.log(`500 code ${data}`)
+                        console.log(`500 code ${data}`);
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
+                        return;
                     },
                     503 : (data)=>{
-                        console.log(`503 code ${data}`)
+                        console.log(`503 code ${data}`);
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"request timeout!");
+                        return;
                     },
                 },
                 error : (data)=>{
                     console.log(`err ${data.status}`);
                     return;
-                    //alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"error!!!");
                 }
             });
         }
+
         $.fn.ajaxCall_isUserReadyFaceAuth = userId=>{
             $.ajax({
                 type : "POST",
@@ -263,7 +252,9 @@
                 },
                 dataType : "JSON",
                 success : (data)=>{
-                    
+                    if(!mediaDevices){
+                        $(this).initCam();
+                    }
                     if(data['isReady'] && (data['userId'] === userId)){
                         $(this).togglefaceAuth(2,true);
                         
@@ -372,20 +363,9 @@
                         statusCode:{ 
                             200 : function(data){
                                 console.log(data.message);
-                                //추가작업을 여기부터 작성할것
                                 $("#LoginModal .close").click()
-                                // gloUserId = reqId;
-                                // alertToggle(false,'notLogin-div');
-                                // alertToggle(true,'Login-div');
-                                // $('#loginUser-p').text(reqId)
-                                //  ;
-                                // if(adminFunc.isAdmin(reqId)){
-                                //     adminFunc.activeAdminMenu(true);
-                                // }else{
-                                //     adminFunc.activeAdminMenu(false);
-                                // }
-                                //로그인 이후 함수 이따 넣자
-                                $(this).loginAfterCall(reqId);
+
+                                $(this).loginMenuManager(true,reqId);
                             },
                             400 : function(data){
                                 alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.FALSE,data.responseJSON.message);
@@ -410,6 +390,7 @@
                 }
             }
         };
+
         $(document).ready(function(){
             loginSign = [document.getElementById('SignAlert_login'), document.getElementById('SignAlert_login_message')];
             signSign = [document.getElementById('SignAlert_signin'), document.getElementById('SignAlert_signin_message')];
@@ -419,43 +400,31 @@
                 url : "/visitCounter",
                 dataType : "JSON",
                 success : function(data){
-                    var countString = String(data.visit);
-                    var numbers = new Array();
+                    let countString = String(data.visit);
+                    let numbers = new Array();
                     if(countString.length > 5){
-                        var i = countString.length - 5;
-                        for(var j = 0 ; j < 5 ; j++){
+                        let i = countString.length - 5;
+                        for(let j = 0 ; j < 5 ; j++){
                             numbers[j]=countString[i+j];
                         }
                     }else{
-                        var i = 5 - countString.length;
-                        for(var j = 0 ; j < i ; j++){
+                        let i = 5 - countString.length;
+                        for(let j = 0 ; j < i ; j++){
                             numbers[j]='0';
                         }
-                        var h = 0 ;
-                        for(var j = i ;j<5;j++){
+                        let h = 0 ;
+                        for(let j = i ;j<5;j++){
                             numbers[j]=countString[h++];
                         }
                     }                
-                    for(var i = 0 ; i < 5 ; i++){
+                    for(let i = 0 ; i < 5 ; i++){
                         $('#counter'+(i+1)+'A').attr("srcset","public/number/number"+numbers[i]+".png");    
                         $('#counter'+(i+1)+'B').attr("src","public/number/th_number"+numbers[i]+".png");    
                     }          
                     if(data.user){
-                        gloUserId = data.user;
-                        if(adminFunc.isAdmin(gloUserId)){
-                            adminFunc.activeAdminMenu(true);
-                        }else{
-                            adminFunc.activeAdminMenu(false);
-                        }
-                        alertToggle(false,'notLogin-div');
-                        alertToggle(true,'Login-div');
-                        
-                        $('#loginUser-p').text(data.user);
+                        $(this).loginMenuManager(true,data.user);
                     }else{
-                        
-                        alertToggle(true,'notLogin-div');
-                        alertToggle(false,'Login-div');
-                        adminFunc.activeAdminMenu(false);
+                        $(this).loginMenuManager(false,null);
                     }
                 },
                 error : function(){
@@ -467,17 +436,28 @@
                         $(this).loginFunc($(this).val());
             });  
             $('#FaceAuthModal').on('show.bs.modal',(e)=>{
+                
+                
                 console.log(e);
                 $(this).togglefaceAuth(1,true);
                 console.log('show')
+                
             });
             $('#FaceAuthModal').on('hide.bs.modal','modal-in',(e)=>{
                 console.log(e);
                 console.log('hide')
             });
+            $('.auth_close').on('click',()=>{
+                mediaDevices.stop();
+                mediaDevices=null;
+            });
             $('#modalClose').on('hide.bs.modal',function(e){
                 
                 console.log('도나');
+
+            });
+            $('#infoSettingBtn').on('click',()=>{
+                console.log(`info button clicked`);
 
             });
             $('#logoutBtn').on('click',function(){
@@ -553,12 +533,16 @@
             </div>
             <div class="col-12 collapse align-content-center" id="Login-div">
                 <p>Welcome </p><p id="loginUser-p"></p>
-                <div class="row col-12">
-                    <input type="button" id="logoutBtn" class="btn btn-info center-block" value="LOGOUT">
-                </div>
-                <div class="row col-12 collapse lesspadding" id="adminDiv">
-                    <p class="">Admin Tool</p>
-                    <input type="button" id="WriteBtn"  class="btn btn-info center-block" value="WritePost" onClick="adminFunc.btnWritePost()">
+                <div class="row">
+                    <div class="col-12">
+                        <input type="button" id="infoSettingBtn" class="btn btn-info col-4 offset-1" value="INFO" data-toggle="modal" data-target="#infoModal">
+                        <input type="button" id="logoutBtn" class="btn btn-info col-4 offset-2" value="LOGOUT">
+                        <br>
+                    </div>
+                    <div class="col-12 collapse lesspadding" id="adminDiv">
+                        <p class="">Admin Tool</p>
+                        <input type="button" id="WriteBtn"  class="btn btn-info center-block" value="WritePost" onClick="adminFunc.btnWritePost()">
+                    </div>
                 </div>
             </div>
         </div>
@@ -600,7 +584,6 @@
                         FaceAuth
                         </button>
                     </div>
-                    <!-- add in Oct 04, each button is not connected YET -->
                     <!-- this button's size is currently missmatch!!! recalibrate it ASAP -->
                 </div>
                 
@@ -663,12 +646,12 @@
 </div>
 <!--end-->
 <!--Face Auth Modal -->
-<div class="modal fade row" id="FaceAuthModal" tabindex="2" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+<div class="modal fade row" id="FaceAuthModal" tabindex="2" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered row" role="document">
         <div class="modal-content row lesspadding align-content-center">
             <div class="modal-header row col-12">
                 <h4 class="modal-title" id="exampleModalLabel">Face Auth Login</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                <button type="button" class="close auth_close" data-dismiss="modal" aria-label="Close" id="modalClose">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>

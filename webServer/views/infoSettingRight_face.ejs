@@ -1,0 +1,135 @@
+<script>
+    const faceAuthMain = {div:{},btn:{}};
+
+    let face_video;
+    let face_constraints;
+
+    let face_canvas = document.createElement('canvas');
+    let face_context = face_canvas.getContext('2d');
+
+    $(function(){
+        $.fn.initCama = ()=>{
+            video = document.getElementById('video');
+            constraints = {
+                video : {
+                    width : 640
+                }
+            };
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(mediaStream=>{
+                    mediaDevices = mediaStream;
+                    video.srcObject = mediaStream;
+                    video.onloadedmetadata = e =>{ 
+                        video.style.width = video.videoWidth+"px";
+                        video.style.height = video.videoHeight+"px";
+                        canvas.width = video.videoWidth;
+                        context.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.height = video.videoHeight;
+                        video.play();
+                        const sendImg = getheringCurImage();
+                        $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
+                    }
+                }).catch(e =>{
+                    switch(e.name){
+                        case "NotAllowedError":{
+                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"You must allow cam for Face Auth");
+                            break;
+                        }
+                        default : {
+                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"Unknown error!!!");
+                            break;
+                        }
+                    }   
+                });
+            video.setAttribute("playsinline", true);
+        };
+
+        $(document).ready(()=>{
+            faceAuthMain.div.update = $('#divUpdateFaceMenu'); 
+            faceAuthMain.div.regist = $('#divRegustFaceMenu'); 
+            faceAuthMain.btn.update = $('#btn_updateFaceAuth');
+            faceAuthMain.btn.regist = $('#btn_registFaceAuth');
+        });
+
+        $.fn.btnColorChanger = (target,isSelected)=>{
+            switch(target){
+                case 'update_faceAuth' : {
+                    isSelected ? (
+                        faceAuthMain.btn.regist[0].classList.contains('btn-info') ?
+                            faceAuthMain.btn.regist[0].classList.remove('btn-info') : '' ,
+                        faceAuthMain.btn.update[0].classList.add('btn-info')
+                    ) : (
+                        faceAuthMain.btn.update[0].classList.contains('btn-info') ? 
+                            faceAuthMain.btn.update[0].classList.remove('btn-info') : ''
+                    );
+                    break;
+                }
+                case 'regist_faceAuth' : {
+                    isSelected ? (
+                        faceAuthMain.btn.update[0].classList.contains('btn-info') ?
+                            faceAuthMain.btn.update[0].classList.remove('btn-info') : '' ,
+                        faceAuthMain.btn.regist[0].classList.add('btn-info')
+                    ) : (
+                        faceAuthMain.btn.regist[0].classList.contains('btn-info') ? 
+                            faceAuthMain.btn.regist[0].classList.remove('btn-info') : ''
+                    );
+                    break;
+                }
+                default : {
+                    console.log(`selected arg[0] ${target} is not defined yet`);
+                    break;
+                }
+            }
+        }
+
+        $(this).on('click',(event)=>{
+            switch(event.target.id){
+                case 'btn_updateFaceAuth' : { 
+                    faceAuthMain.div.update.show();
+                    $(this).btnColorChanger('update_faceAuth',true);
+                    faceAuthMain.div.regist.hide();
+                    break;
+                }
+                case 'btn_registFaceAuth' : { 
+                    faceAuthMain.div.regist.show();
+                    $(this).btnColorChanger('regist_faceAuth',true);
+                    faceAuthMain.div.update.hide();
+                    break;
+                }
+                default : {
+                    console.log(`selected arg[0] ${event.target.id} is not defined yet`);
+                    break;
+                }
+            }
+        });
+    });
+</script>
+
+<div class=" col-12 ">
+    <div class="row align-content-center">
+        <div class="col-12  align-content-center margin-light-topbottom margin-ex-light-bottom">
+            <input type="button" class="btn btn-light" value="testbtn1" id="btn_updateFaceAuth"/>
+            <input type="button" class="btn btn-light" value="testBtn2" id="btn_registFaceAuth"/>
+            <hr class="hr less_hr"/>
+        </div>
+        
+        <div class="col-12  align-content-center" id="divUpdateFaceMenu">
+            
+            1번 div ( update face)
+        </div>
+        <div class="col-12  align-content-center" id="divRegustFaceMenu">
+
+            2번 div ( regist face)    
+            <div class="row col-12 alert alert-success no-margin" role="alert" id="alert_registFace">
+                <p class="text-center col-12" id="InfoAlert_registAccount_message">Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.</p>
+                <div class="row col-12">
+                    <video class="userCapImage col-10" src="" id="face_video" style="width:320px;height:0px" autoplay='true'></video>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+</div>
