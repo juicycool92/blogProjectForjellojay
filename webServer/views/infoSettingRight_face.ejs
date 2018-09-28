@@ -1,57 +1,25 @@
+
 <script>
     const faceAuthMain = {div:{},btn:{}};
-
-    let face_video;
-    let face_constraints;
-
-    let face_canvas = document.createElement('canvas');
-    let face_context = face_canvas.getContext('2d');
+    let info_update_video;
+    
 
     $(function(){
-        $.fn.initCama = ()=>{
-            video = document.getElementById('video');
-            constraints = {
-                video : {
-                    width : 640
-                }
-            };
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(mediaStream=>{
-                    mediaDevices = mediaStream;
-                    video.srcObject = mediaStream;
-                    video.onloadedmetadata = e =>{ 
-                        video.style.width = video.videoWidth+"px";
-                        video.style.height = video.videoHeight+"px";
-                        canvas.width = video.videoWidth;
-                        context.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        context.height = video.videoHeight;
-                        video.play();
-                        const sendImg = getheringCurImage();
-                        $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
-                    }
-                }).catch(e =>{
-                    switch(e.name){
-                        case "NotAllowedError":{
-                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"You must allow cam for Face Auth");
-                            break;
-                        }
-                        default : {
-                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"Unknown error!!!");
-                            break;
-                        }
-                    }   
-                });
-            video.setAttribute("playsinline", true);
-        };
-
         $(document).ready(()=>{
             faceAuthMain.div.update = $('#divUpdateFaceMenu'); 
             faceAuthMain.div.regist = $('#divRegustFaceMenu'); 
             faceAuthMain.btn.update = $('#btn_updateFaceAuth');
             faceAuthMain.btn.regist = $('#btn_registFaceAuth');
+            faceAuthMain.btn.updateToggle = $('#btn_toggleUpdate');
         });
+
+        $.fn.initMenuInfoUpdate = ()=>{
+            info_update_video = document.getElementById('face_update_video');
+            $('#face_update_video')[0].style.width = "320px";
+            $('#face_update_video')[0].style.height = "240px";
+            $(this).initCam(info_update_video);
+
+        };
 
         $.fn.btnColorChanger = (target,isSelected)=>{
             switch(target){
@@ -64,6 +32,7 @@
                         faceAuthMain.btn.update[0].classList.contains('btn-info') ? 
                             faceAuthMain.btn.update[0].classList.remove('btn-info') : ''
                     );
+                    $(this).initMenuInfoUpdate();
                     break;
                 }
                 case 'regist_faceAuth' : {
@@ -98,6 +67,10 @@
                     faceAuthMain.div.update.hide();
                     break;
                 }
+                case 'btn_toggleUpdate' : {
+                    
+                    break;
+                }
                 default : {
                     console.log(`selected arg[0] ${event.target.id} is not defined yet`);
                     break;
@@ -118,17 +91,34 @@
         <div class="col-12  align-content-center" id="divUpdateFaceMenu">
             
             1번 div ( update face)
+            <div class="row col-12 alert alert-success no-margin" role="alert" id="alert_registFace">
+                <p class="text-center col-12" id="InfoAlert_registAccount_message">Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.</p>
+                
+            </div>
+            <div class="row col-12">
+                <div class="col-lg-6 offset-lg-2 col-6 offset-3">
+                    <video class="userCapImage" src="" id="face_update_video" autoplay='true'></video>    
+                </div>
+                
+            </div>
+            <div class="col-8 offset-2 ">
+                <input type="button" class="btn btn-light col align-self-center" value="update!" id="btn_toggleUpdate"/>
+            </div>
         </div>
         <div class="col-12  align-content-center" id="divRegustFaceMenu">
 
             2번 div ( regist face)    
             <div class="row col-12 alert alert-success no-margin" role="alert" id="alert_registFace">
                 <p class="text-center col-12" id="InfoAlert_registAccount_message">Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.</p>
-                <div class="row col-12">
-                    <video class="userCapImage col-10" src="" id="face_video" style="width:320px;height:0px" autoplay='true'></video>
+                
+            </div>
+            <div class="row col-12">
+                <div class="col-lg-6 offset-lg-2 col-6 offset-3">
+                    <video class="userCapImage" src="" id="face_update_video" autoplay='true'></video>    
                 </div>
                 
             </div>
+
             
         </div>
     </div>

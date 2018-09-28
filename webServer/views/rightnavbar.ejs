@@ -2,19 +2,14 @@
 </script>
 <script type="text/javascript">
     let gloUserId;//전역유저id
-    let video;
-    let constraints;
+    
     let isFaceAuthSuccess = false;
     let facialAttempUserId;
-    let canvas = document.createElement('canvas');
-    let context = canvas.getContext('2d');
+    
     let loginSign,signSign,authSign;
-    let mediaDevices;   //this letiable are bind to mediaDevices from $().init() it's control webcam status. 
+    
    
-    function getheringCurImage(){
-        context.drawImage(video,0,0,context.width,context.height);
-        return canvas.toDataURL('image/webp');
-    }
+    let authvideo;
 
     //below three function is only made for alerting // 
     function deleteAlertClass(targetObject){
@@ -126,43 +121,7 @@
         //check auth user. and admin.
         //displaying login and out menu.
 
-        $.fn.initCam = ()=>{
-            video = document.getElementById('video');
-            constraints = {
-                video : {
-                    width : 640
-                }
-            };
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(mediaStream=>{
-                    mediaDevices = mediaStream;
-                    video.srcObject = mediaStream;
-                    video.onloadedmetadata = e =>{ 
-                        video.style.width = video.videoWidth+"px";
-                        video.style.height = video.videoHeight+"px";
-                        canvas.width = video.videoWidth;
-                        context.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        context.height = video.videoHeight;
-                        video.play();
-                        const sendImg = getheringCurImage();
-                        $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
-                    }
-                }).catch(e =>{
-                    switch(e.name){
-                        case "NotAllowedError":{
-                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"You must allow cam for Face Auth");
-                            break;
-                        }
-                        default : {
-                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"Unknown error!!!");
-                            break;
-                        }
-                    }   
-                });
-            video.setAttribute("playsinline", true);
-        }
+        
 
         $.fn.togglefaceAuth = (order,isActivate)=>{
             switch(order){
@@ -178,7 +137,11 @@
                         
                         $('#video')[0].style.width = "320px";
                         $('#video')[0].style.height = "240px";
-                        $(this).initCam();
+                        if($(this).initCam(authvideo)){
+                            $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
+                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
+                        }
+                        
                     }else{
 
                     }
@@ -190,96 +153,7 @@
                 }
             }
         }
-        $.fn.ajaxCall_faceAuth = (userId,userImg)=>{
-            if(!mediaDevices){
-                return console.log(`in ajax call function ${mediaDevices} therefore function stop`);
-            }
-            userImg = getheringCurImage();
-            console.log('ajax call face auth is activated ::'+userImg)
-            $.ajax({
-                type : "POST",
-                url : "/authFace",
-                data : {
-                    "userId" : userId,
-                    "userImg" : userImg
-                },
-                dataType : "JSON",
-                success : (data)=>{
-                    console.log('SUCCESS!!!')
-                    alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"auth Successfully");
-                    $(this).loginMenuManager(true,userId);
-                    $("#LoginModal .close").click();
-                    $("#FaceAuthModal .close").click();
-                },
-                statusCode : {                    
-                    300 : (data)=>{
-                        console.log(`300 code ${data}`);
-                        $(this).ajaxCall_faceAuth(userId,userImg);
-                    },
-                    401 : (data)=>{
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"faceAuth failed");
-                        console.log(`401 code ${data}`);
-                        return;
-                    },
-                    412 : (data)=>{
-                        console.log(`412 code ${data}`);
-                        return;
-                    },
-                    500 : (data)=>{
-                        console.log(`500 code ${data}`);
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
-                        return;
-                    },
-                    503 : (data)=>{
-                        console.log(`503 code ${data}`);
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"request timeout!");
-                        return;
-                    },
-                },
-                error : (data)=>{
-                    console.log(`err ${data.status}`);
-                    return;
-                }
-            });
-        }
-
-        $.fn.ajaxCall_isUserReadyFaceAuth = userId=>{
-            $.ajax({
-                type : "POST",
-                url : "/isUserReadyFaceAuth",
-                data : {
-                    "userId" : userId
-                },
-                dataType : "JSON",
-                success : (data)=>{
-                    if(!mediaDevices){
-                        $(this).initCam();
-                    }
-                    if(data['isReady'] && (data['userId'] === userId)){
-                        $(this).togglefaceAuth(2,true);
-                        
-                    }else{
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"this user is not register for face auth!");
-                    }
-                    
-                },
-                statusCode : {
-                    400 : ()=>{
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"error! 400");
-                    },
-                    401 : ()=>{
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"user not exist!");
-                    },
-                    500 : ()=>{
-                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
-                    },
-
-                },
-                error : ()=>{
-                    alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"uncaught error!!!");
-                }
-            });
-        }        
+                
         $.fn.loginFunc = function(reqFlag){
             switch(reqFlag){
                 case "Signin":{
@@ -391,7 +265,47 @@
             }
         };
 
+        $.fn.ajaxCall_isUserReadyFaceAuth = (userId)=>{
+            $.ajax({
+                type : "POST",
+                url : "/isUserReadyFaceAuth",
+                data : {
+                    "userId" : userId
+                },
+                dataType : "JSON",
+                success : (data)=>{
+                    if(!mediaDevices){
+                        if($(this).initCam(authvideo)){
+                            $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
+                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
+                        }
+                    }
+                    if(data['isReady'] && (data['userId'] === userId)){
+                        $(this).togglefaceAuth(2,true);
+                    
+                    }else{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"this user is not register for face auth!");
+                    }
+                },
+                statusCode : {
+                    400 : ()=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"error! 400");
+                    },
+                    401 : ()=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"user not exist!");
+                    },
+                    500 : ()=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
+                    },
+                },
+                error : ()=>{
+                    alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"uncaught error!!!");
+                }
+            });
+        };
+
         $(document).ready(function(){
+            authvideo = document.getElementById('video');
             loginSign = [document.getElementById('SignAlert_login'), document.getElementById('SignAlert_login_message')];
             signSign = [document.getElementById('SignAlert_signin'), document.getElementById('SignAlert_signin_message')];
             authSign = [document.getElementById('SignAlert_faceAuth'), document.getElementById('SignAlert_faceAuth_message')];
@@ -448,7 +362,7 @@
                 console.log('hide')
             });
             $('.auth_close').on('click',()=>{
-                mediaDevices.stop();
+                mediaDevices.getVideoTracks()[0].stop();
                 mediaDevices=null;
             });
             $('#modalClose').on('hide.bs.modal',function(e){
