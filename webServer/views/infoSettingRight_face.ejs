@@ -2,8 +2,8 @@
 <script>
     const faceAuthMain = {div:{},btn:{}};
     let info_update_video;
-    
-
+    let isCameraReady = false;
+    let isToggleUpdateEnabled = false;
     $(function(){
         $(document).ready(()=>{
             faceAuthMain.div.update = $('#divUpdateFaceMenu'); 
@@ -17,33 +17,38 @@
             info_update_video = document.getElementById('face_update_video');
             $('#face_update_video')[0].style.width = "320px";
             $('#face_update_video')[0].style.height = "240px";
-            $(this).initCam(info_update_video);
+            isCameraReady = $(this).initCam(info_update_video);
 
         };
 
         $.fn.btnColorChanger = (target,isSelected)=>{
             switch(target){
-                case 'update_faceAuth' : {
+                case _BTN.NAME.UPDATE : {
                     isSelected ? (
-                        faceAuthMain.btn.regist[0].classList.contains('btn-info') ?
-                            faceAuthMain.btn.regist[0].classList.remove('btn-info') : '' ,
-                        faceAuthMain.btn.update[0].classList.add('btn-info')
+                        faceAuthMain.btn.regist[0].classList.contains(_BTN.COLOR.CYAN) ?
+                            faceAuthMain.btn.regist[0].classList.remove(_BTN.COLOR.CYAN) : null ,
+                        faceAuthMain.btn.update[0].classList.add(_BTN.COLOR.CYAN)
                     ) : (
-                        faceAuthMain.btn.update[0].classList.contains('btn-info') ? 
-                            faceAuthMain.btn.update[0].classList.remove('btn-info') : ''
+                        faceAuthMain.btn.update[0].classList.contains(_BTN.COLOR.CYAN) ? 
+                            faceAuthMain.btn.update[0].classList.remove(_BTN.COLOR.CYAN) : null
                     );
                     $(this).initMenuInfoUpdate();
                     break;
                 }
-                case 'regist_faceAuth' : {
+                case _BTN.NAME.REGIST : {
                     isSelected ? (
-                        faceAuthMain.btn.update[0].classList.contains('btn-info') ?
-                            faceAuthMain.btn.update[0].classList.remove('btn-info') : '' ,
-                        faceAuthMain.btn.regist[0].classList.add('btn-info')
+                        faceAuthMain.btn.update[0].classList.contains(_BTN.COLOR.CYAN) ?
+                            faceAuthMain.btn.update[0].classList.remove(_BTN.COLOR.CYAN) : null ,
+                        faceAuthMain.btn.regist[0].classList.add(_BTN.COLOR.CYAN)
                     ) : (
-                        faceAuthMain.btn.regist[0].classList.contains('btn-info') ? 
-                            faceAuthMain.btn.regist[0].classList.remove('btn-info') : ''
+                        faceAuthMain.btn.regist[0].classList.contains(_BTN.COLOR.CYAN) ? 
+                            faceAuthMain.btn.regist[0].classList.remove(_BTN.COLOR.CYAN) : null
                     );
+                    break;
+                }
+                case _BTN.NAME.TOGGLE_UPDATE : {
+                    const updateBtnList = document.getElementById(_BTN.NAME.TOGGLE_UPDATE).classList;
+                    updateBtnList.contains(_BTN.COLOR.RED) ? (isSelected ? null : updateBtnList.remove(_BTN.COLOR.RED) ) : updateBtnList.add(_BTN.COLOR.RED);
                     break;
                 }
                 default : {
@@ -55,19 +60,35 @@
 
         $(this).on('click',(event)=>{
             switch(event.target.id){
-                case 'btn_updateFaceAuth' : { 
+                case _BTN.NAME.UPDATE : { 
                     faceAuthMain.div.update.show();
-                    $(this).btnColorChanger('update_faceAuth',true);
+                    $(this).btnColorChanger(event.target.id,true);
                     faceAuthMain.div.regist.hide();
                     break;
                 }
-                case 'btn_registFaceAuth' : { 
+                case _BTN.NAME.REGIST : { 
                     faceAuthMain.div.regist.show();
-                    $(this).btnColorChanger('regist_faceAuth',true);
+                    $(this).btnColorChanger(event.target.id,true);
                     faceAuthMain.div.update.hide();
                     break;
                 }
-                case 'btn_toggleUpdate' : {
+                case _BTN.NAME.TOGGLE_UPDATE : {
+                    if(!isToggleUpdateEnabled){
+                        if(!isCameraReady){
+                            isCameraReady = $(this).initCam(info_update_video);
+                        }
+                        isToggleUpdateEnabled = true;
+                        alertSetting(_ALERT.TYPE.FACEAPPEND,true,_ALERT.STATUS.INFO,_MSG.UPDATEFACE,document.getElementById('alert_registFace'),document.getElementById('InfoAlert_registAccount_message'));
+                        //permission is grant and ready for append face auth.
+                        // TO-DO : ajax call for append face auth.
+                        $(this).btnColorChanger(event.target.id,true)
+                    }else{
+                        $(this).killCam();
+                        isToggleUpdateEnabled = false;
+                        $(this).btnColorChanger(event.target.id,false)
+                        alertSetting(_ALERT.TYPE.FACEAPPEND,true,_ALERT.STATUS.INFO,_MSG.UPDATESTOPPED,document.getElementById('alert_registFace'),document.getElementById('InfoAlert_registAccount_message'));
+                    }
+                    
                     
                     break;
                 }
@@ -92,7 +113,7 @@
             
             1번 div ( update face)
             <div class="row col-12 alert alert-success no-margin" role="alert" id="alert_registFace">
-                <p class="text-center col-12" id="InfoAlert_registAccount_message">Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.</p>
+                <p class="text-center col-12" id="InfoAlert_registAccount_message">Face on to camera, press update button below</p>
                 
             </div>
             <div class="row col-12">

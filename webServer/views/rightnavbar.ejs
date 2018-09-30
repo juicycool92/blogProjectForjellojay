@@ -12,61 +12,8 @@
     let authvideo;
 
     //below three function is only made for alerting // 
-    function deleteAlertClass(targetObject){
-        if(targetObject.classList.contains(_ALERT.STATUS.TRUE)){
-            targetObject.classList.remove(_ALERT.STATUS.TRUE);
-        }
-        if(targetObject.classList.contains(_ALERT.STATUS.FALSE)){
-            targetObject.classList.remove(_ALERT.STATUS.FALSE);
-        }
-        if(targetObject.classList.contains(_ALERT.STATUS.INFO)){
-            targetObject.classList.remove(_ALERT.STATUS.INFO);
-        }
-    }
-    function alertSetting(alertType = null, isVisiable = false, status = _ALERT.STATUS.FALSE, message = null){
-        switch(alertType){
-            case _ALERT.TYPE.LOGIN : {
-                deleteAlertClass(loginSign[0]);                
-                loginSign[0].classList.add(status);
-                isVisiable ? ( loginSign[0].classList.contains('in') ? null : loginSign[0].classList.add('in') ) : ( loginSign[0].classList.contains('in') ? loginSign[0].classList.remove('in') : null );
-                if(message){
-                    loginSign[1].innerText = message;
-                }
-                break;
-            }
-            case _ALERT.TYPE.SIGN : {
-                deleteAlertClass(signSign[0]);                
-                signSign[0].classList.add(status);
-                isVisiable ? ( signSign[0].classList.contains('in') ? null : signSign[0].classList.add('in') ) : ( signSign[0].classList.contains('in') ? signSign[0].classList.remove('in') : null );
-                if(message){
-                    signSign[1].innerText = message;
-                }
-                break;
-            }
-            case _ALERT.TYPE.FACEAUTH : {
-                deleteAlertClass(authSign[0]);                
-                authSign[0].classList.add(status);
-                isVisiable ? ( authSign[0].classList.contains('in') ? null : authSign[0].classList.add('in') ) : ( authSign[0].classList.contains('in') ? authSign[0].classList.remove('in') : null );
-                if(message){
-                    authSign[1].innerText = message;
-                }
-                break;
-            }
-        }
-    }
-    function alertToggle(isVisiable,alertId){
-        if(isVisiable==true){
-            document.getElementById(''+alertId+'').classList.add('in') ;
-        }else if(isVisiable==false){
-            document.getElementById(''+alertId+'').classList.remove('in') ;
-        }else if(isVisiable==null){
-            if(document.getElementById(''+alertId+'').classList.contains('in')){
-                document.getElementById(''+alertId+'').classList.remove('in') ;
-            }else{
-                document.getElementById(''+alertId+'').classList.add('in') ;
-            }
-        }
-    }
+    
+    
     ///////////////////////////////////////////////////
 
 
