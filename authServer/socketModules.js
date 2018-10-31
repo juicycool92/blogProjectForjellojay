@@ -10,6 +10,9 @@ let myRecognizer = null;//this is recognizer.
 let imageSetLabelNames = null; //this array is for recognizer's labels name.
 var curUserImages = new Array(); //this array is using with create new user.
 
+const pushScheduler = require('./modules/pushScheduler.js');
+const pushManager = new pushScheduler();
+
 const setTrain = (recognizerType,cb)=>{//this function is for trainset. usually called in when this script created.
     readTrainSet((err,res)=>{
         if(err){//if TrainSet is not Exist!
@@ -197,7 +200,9 @@ function callRecognizer(type,imageSets,labelSets,cb){
 const imageAdd = (imageLocation,image,cb)=>{
     let fileSize = 0;
     fs.readdir(imageLocation,(err,lists)=>{
-        if(!err){
+        if(err){
+            return cb(err,null);
+        }else{
             fileSize = lists.length;
         }
         const filename =("000" + fileSize).slice(-3);
@@ -479,7 +484,110 @@ module.exports.retrainRecognizer = (cb)=>{
         }
     });
 };
+const isUserFolderExist = (userImageLoc,cb)=>{
+    fs.readdir(userImageLoc,(err)=>{
+        if(err){
+            return cb(err,false);
+        }
+        return cb(null,true);
+    });
+}//this function is checking directory if its exist or not, callback(error,isSuccess?)
 
+module.exports.isSelectedUserRegisted = (userId,cb)=>{
+    const userImageLoc = `userImage/${userId}`;
+    isUserFolderExist(userImageLoc,(err,isExist)=>{
+        if(!isExist){
+            console.error("isSelectedUserRegisted()에서 에러 발생? "+err);
+            return cb(err,false);
+        }
+        console.log('its exist')
+        return cb(null,true)
+    });
+}
+
+module.exports.appendUserImage = (userId,userCvImage,cb)=>{
+    
+    const userImageLoc = `userImage/${userId}`;
+    const curLen= Number.parseInt(getUserImageLength(userImageLoc));
+    imageAdd(userImageLoc,userCvImage,(err)=>{
+        if(err){
+            cb(err,null);
+        }else{
+            cb(null,curLen+1);
+        }
+        return;
+    });
+}
+const createNewFolder = (userImageLoc,cb)=>{
+    fs.mkdir(userImageLoc,(err)=>{
+        if(err){
+            cb(new Error('ERROR on socketModule.js createNewFolder() fs.mkdir() failed ::'+err),false);
+        }else{
+            cb(null,true);
+        }
+        return;
+    });
+}
+module.exports.insertUserImage = (userId,userCvImage,cb)=>{
+    const userImageLoc = `userImage/${userId}`;
+    isUserFolderExist(userImageLoc,(err,isExist)=>{
+        if(!isExist){
+            //create new folder and
+            //inser image
+            createNewFolder(userImageLoc,(err,isSuccess)=>{
+                if(err){
+                    cb(err);
+                }else{
+                    imageAdd(userImageLoc,userCvImage,(err)=>{
+                        if(err){
+                            cb(err,null);
+                        }else{
+                            cb(null,1);
+                        }
+                        return;
+                    });
+                }
+            });
+        }else{
+            const curLen= Number.parseInt(getUserImageLength(userImageLoc));
+            imageAdd(userImageLoc,userCvImage,(err)=>{
+                if(err){
+                    cb(err,null);
+                }else{
+                    cb(null,curLen+1);
+                }
+                return;
+            });
+        }
+        return;
+    });
+}//this function is for first registed user, which mean, its same function as above appendUserImage(), but create new folder is quite diff
+module.exports.pushFaceInfo = ()=>{
+    if(!pushManager.getIsBusy()){ 
+        pushManager.startPush();
+        createNewTrainSet(myRecognizerType["_LBPH_RECOGNIZER"],(err)=>{ 
+            if(err){
+                console.log(`[CRITICAL] preparing recognizer from setTrain() FAILED!!! SERVER STOP!!!`);
+                throw new Error('server has blocked');
+            }else{
+                setTrain(myRecognizerType["_LBPH_RECOGNIZER"],(err)=>{ //this is called when this module called.
+                    if(err){
+                        console.log(`[CRITICAL] preparing recognizer from setTrain() FAILED!!! SERVER STOP!!!`);
+                        throw new Error('server has blocked');
+                    }else{
+                        pushManager.freeScheduler();
+                    }
+                });
+            }
+        });
+    }else{
+        console.log(`[socketModule.js][pushFaceInfo][WARN] push request sent at ${new Date().getTimezoneOffset()} but its still progressing, IGNORED`);
+    }
+    //check its already pushing
+    //mark as pushing
+    //pushing
+    //when its done, remark it.
+}
 setTrain(myRecognizerType["_LBPH_RECOGNIZER"],(err)=>{ //this is called when this module called.
     if(err){
         console.log(`[CRITICAL] preparing recognizer from setTrain() FAILED!!! SERVER STOP!!!`);

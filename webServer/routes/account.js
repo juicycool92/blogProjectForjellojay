@@ -66,5 +66,15 @@ module.exports = (app,jsonCreator,User,passport,socketRoutes)=>{
     app.post('/authFace',(req,res)=>{
         socketRoutes.authFace([req,res],req.body.userId,req.body.userImg);
     });
+
+    app.post('/authFaceUpdate',(req,res)=>{
+        socketRoutes.updateFace([req,res],req.body.userId,req.body.userImg);
+    });
+    app.post('/authFaceRegist',(req,res)=>{
+        socketRoutes.registFace([req,res],req.body.userId,req.body.userImg);
+    });
+    app.post('/authFaceRegistDone',(req,res)=>{
+        socketRoutes.pushFaceInfo([req,res]);
+    });
     //in case of faceAuth, calling authFace function from authServerModule.js
 };

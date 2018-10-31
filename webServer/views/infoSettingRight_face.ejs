@@ -1,6 +1,6 @@
 
 <script>
-    const faceAuthMain = {div:{},btn:{}};
+    const faceAuthMain = {div:{},btn:{},alert:{}};
     let info_update_video;
     
 
@@ -8,19 +8,119 @@
         $(document).ready(()=>{
             faceAuthMain.div.update = $('#divUpdateFaceMenu'); 
             faceAuthMain.div.regist = $('#divRegustFaceMenu'); 
+            faceAuthMain.div.cam = $('#divInfoMainCamera'); 
+
             faceAuthMain.btn.update = $('#btn_updateFaceAuth');
             faceAuthMain.btn.regist = $('#btn_registFaceAuth');
             faceAuthMain.btn.updateToggle = $('#btn_toggleUpdate');
+            
+            faceAuthMain.alert.regist = { alert : $('#alert_registFace')[0], message : $('#InfoAlert_registAccount_message')[0] };
+            faceAuthMain.alert.update = { alert : $('#alert_updateFace')[0], message : $('#InfoAlert_updateAccount_message')[0] };
+            
+            faceAuthMain.div.update.hide();
+            faceAuthMain.div.regist.hide();
+            faceAuthMain.div.cam.hide();
         });
+
+        $.fn.ajaxCall_updateMyFace = ()=>{
+            const userImg = getheringCurImage();
+            $.ajax({
+                type : "POST",
+                url : "/authFaceUpdate",
+                data : {
+                    "userId" : gloUserId,
+                    "userImg" : userImg
+                },
+                dataType : "JSON",
+                success : (data)=>{
+                    $(this).alertColorAndMessageUpdate(faceAuthMain.alert.update,`success! total [${data.imgLen}] images are prepared!`,_ALERT.STATUS.TRUE)
+                },  
+                statusCode : {
+                    300 : (data)=>{
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.update,`detecting facial image failed. try again`,_ALERT.STATUS.INFO);
+                    },
+                    400 : (data)=>{
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.update,`You must [Regist] first!`,_ALERT.STATUS.FALSE);
+                    },
+                    500 : (data)=>{
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.update,`Auth server didnt responde, check your internet connection`,_ALERT.STATUS.FALSE)
+                    },
+                },
+                error : (e)=>{}
+            });
+        };
+        $.fn.ajaxCall_registMyFace = ()=>{
+            const userImg = getheringCurImage();
+            $.ajax({
+                type : "POST",
+                url : "/authFaceRegist",
+                data : {
+                    "userId" : gloUserId,
+                    "userImg" : userImg
+                },
+                dataType : "JSON",
+                success : (data)=>{
+                    if(data.imgLen <= 9){
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.regist,`processing. . .\n${data.imgLen} / 10\n images are prepared..`,_ALERT.STATUS.INFO);
+                        return $(this).ajaxCall_registMyFace();
+                    }else{
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.regist,`success! total [${data.imgLen}] images are prepared!\nUsually it take 2minuate for update auth face server.`,_ALERT.STATUS.TRUE);
+                        return $(this).ajaxCall_requestPush();
+                    }
+                    
+                },  
+                statusCode : {
+                    300 : (data)=>{
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.regist,`detecting facial image failed. try again`,_ALERT.STATUS.INFO);
+                    },
+                    500 : (data)=>{
+                        $(this).alertColorAndMessageUpdate(faceAuthMain.alert.regist,`Auth server didnt responde, check your internet connection`,_ALERT.STATUS.FALSE)
+                    },
+                },
+                error : (e)=>{}
+            });
+        };
+
+        $.fn.ajaxCall_requestPush = ()=>{
+            $.ajax({
+                type : "POST",
+                url : "/authFaceRegistDone",
+                dataType : "JSON",
+                success : (data)=>{
+                    console.log('faceRegist all done');
+                },  
+                statusCode : {
+                },
+                error : (e)=>{
+                    console.error(e);
+                }
+            });
+        };
 
         $.fn.initMenuInfoUpdate = ()=>{
             info_update_video = document.getElementById('face_update_video');
             $('#face_update_video')[0].style.width = "320px";
             $('#face_update_video')[0].style.height = "240px";
-            $(this).initCam(info_update_video);
+            $(this).initCam(info_update_video,(isSuccess)=>{
+                if(isSuccess){
+
+                }else{
+
+                }
+            });
 
         };
+        $.fn.alertColorAndMessageUpdate = (targetId,message,targetColor)=>{
+            targetId.alert.classList.contains(_ALERT.STATUS.TRUE) ? targetId.alert.classList.remove(_ALERT.STATUS.TRUE) : '' ;
+            targetId.alert.classList.contains(_ALERT.STATUS.FALSE) ? targetId.alert.classList.remove(_ALERT.STATUS.FALSE) : '' ;
+            targetId.alert.classList.contains(_ALERT.STATUS.INFO) ? targetId.alert.classList.remove(_ALERT.STATUS.INFO) : '' ;
+            targetId.alert.classList.add(targetColor);
+            targetId.message.innerText = message;
+        }
 
+        $.fn.messageBoxUpdate = (targetId,message)=>{
+            targetId.innerText = message;
+        }
         $.fn.btnColorChanger = (target,isSelected)=>{
             switch(target){
                 case 'update_faceAuth' : {
@@ -32,7 +132,7 @@
                         faceAuthMain.btn.update[0].classList.contains('btn-info') ? 
                             faceAuthMain.btn.update[0].classList.remove('btn-info') : ''
                     );
-                    $(this).initMenuInfoUpdate();
+                    
                     break;
                 }
                 case 'regist_faceAuth' : {
@@ -57,18 +157,28 @@
             switch(event.target.id){
                 case 'btn_updateFaceAuth' : { 
                     faceAuthMain.div.update.show();
+                    faceAuthMain.div.cam.show();
+                    $(this).initMenuInfoUpdate();
                     $(this).btnColorChanger('update_faceAuth',true);
                     faceAuthMain.div.regist.hide();
                     break;
                 }
                 case 'btn_registFaceAuth' : { 
                     faceAuthMain.div.regist.show();
+                    faceAuthMain.div.cam.show();
+                    $(this).initMenuInfoUpdate();
                     $(this).btnColorChanger('regist_faceAuth',true);
                     faceAuthMain.div.update.hide();
                     break;
                 }
                 case 'btn_toggleUpdate' : {
-                    
+                    console.log('hi');
+                    $(this).ajaxCall_updateMyFace();
+                    break;
+                }
+                case 'btn_toggleCreate' : {
+                    console.log('hi');
+                    $(this).ajaxCall_registMyFace();
                     break;
                 }
                 default : {
@@ -83,43 +193,46 @@
 <div class=" col-12 ">
     <div class="row align-content-center">
         <div class="col-12  align-content-center margin-light-topbottom margin-ex-light-bottom">
-            <input type="button" class="btn btn-light" value="testbtn1" id="btn_updateFaceAuth"/>
-            <input type="button" class="btn btn-light" value="testBtn2" id="btn_registFaceAuth"/>
+            <input type="button" class="btn btn-light" value="Update" id="btn_updateFaceAuth"/>
+            <input type="button" class="btn btn-light" value="Create" id="btn_registFaceAuth"/>
             <hr class="hr less_hr"/>
         </div>
         
         <div class="col-12  align-content-center" id="divUpdateFaceMenu">
+            <div class="row col-12 alert alert-info no-margin" role="alert" id="alert_updateFace">
+                <p class="text-center col-12" id="InfoAlert_updateAccount_message">
+                    This is add faceAuth image page.<br> 
+                    You can always append another face from here.<br>
+                    Click [update!] button below to start capture your new facial image!
+                </p>
+                
+            </div>
             
-            1번 div ( update face)
-            <div class="row col-12 alert alert-success no-margin" role="alert" id="alert_registFace">
-                <p class="text-center col-12" id="InfoAlert_registAccount_message">Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.</p>
-                
-            </div>
-            <div class="row col-12">
-                <div class="col-lg-6 offset-lg-2 col-6 offset-3">
-                    <video class="userCapImage" src="" id="face_update_video" autoplay='true'></video>    
-                </div>
-                
-            </div>
             <div class="col-8 offset-2 ">
                 <input type="button" class="btn btn-light col align-self-center" value="update!" id="btn_toggleUpdate"/>
             </div>
         </div>
+        
+        
         <div class="col-12  align-content-center" id="divRegustFaceMenu">
 
             2번 div ( regist face)    
-            <div class="row col-12 alert alert-success no-margin" role="alert" id="alert_registFace">
-                <p class="text-center col-12" id="InfoAlert_registAccount_message">Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.Hello world! this is instruction text context.</p>
-                
+            <div class="row col-12 alert alert-info no-margin" role="alert" id="alert_registFace">
+                <p class="text-center col-12" id="InfoAlert_registAccount_message">
+                    This is Regist page for faceAuth. <br> 
+                    For create new Auth system, press [Start!] and smile for the camera.<br>
+                    It takes time for gathering handful facial image for new auth.
+                </p>
             </div>
-            <div class="row col-12">
+            <div class="col-8 offset-2 ">
+                <input type="button" class="btn btn-light col align-self-center" value="Start!" id="btn_toggleCreate"/>
+            </div>
+        </div>
+
+        <div class="row col-12" id="divInfoMainCamera">
                 <div class="col-lg-6 offset-lg-2 col-6 offset-3">
                     <video class="userCapImage" src="" id="face_update_video" autoplay='true'></video>    
                 </div>
-                
-            </div>
-
-            
         </div>
     </div>
 </div>

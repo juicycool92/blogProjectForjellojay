@@ -43,7 +43,7 @@ const setBtnColor = (btn,target,dest)=>{
     }
 }
 $(function(){
-    $.fn.initCam = (selectedVideo)=>{
+    $.fn.initCam = function(selectedVideo,cb){
         video = selectedVideo;
         constraints = {
             video : {
@@ -63,11 +63,12 @@ $(function(){
                     canvas.height = video.videoHeight;
                     context.height = video.videoHeight;
                     video.play();
-                    const sendImg = getheringCurImage();
-                    return true;
+                    //const sendImg = getheringCurImage();
+                    cb(true);
                    
                 }
             }).catch(e =>{
+                console.log(e)
                 switch(e.name){
                     case "NotAllowedError":{
                         alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"You must allow cam for Face Auth");
@@ -78,16 +79,17 @@ $(function(){
                         break;
                     }
                 }   
-                return false;
+                cb(false);
             });
         video.setAttribute("playsinline", true);
+        return this;
     };
 
-    $.fn.ajaxCall_faceAuth = (userId,userImg)=>{
+    $.fn.ajaxCall_faceAuth = (userId)=>{
         if(!mediaDevices){
             return console.log(`in ajax call function ${mediaDevices} therefore function stop`);
         }
-        userImg = getheringCurImage();
+        const userImg = getheringCurImage();
         console.log('ajax call face auth is activated ::'+userImg)
         $.ajax({
             type : "POST",
@@ -107,7 +109,7 @@ $(function(){
             statusCode : {                    
                 300 : (data)=>{
                     console.log(`300 code ${data}`);
-                    $(this).ajaxCall_faceAuth(userId,userImg);
+                    $(this).ajaxCall_faceAuth(userId);
                 },
                 401 : (data)=>{
                     alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"faceAuth failed");
@@ -135,7 +137,4 @@ $(function(){
             }
         });
     };
-
-    
-
 });

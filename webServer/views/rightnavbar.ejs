@@ -137,11 +137,15 @@
                         
                         $('#video')[0].style.width = "320px";
                         $('#video')[0].style.height = "240px";
-                        if($(this).initCam(authvideo)){
-                            $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
-                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
-                        }
-                        
+                        $(this).initCam(authvideo,isSuccess=>{
+                            if(isSuccess){
+                                console.log('calling them a call');
+                                $(this).ajaxCall_faceAuth($('#faceAuthID').val());
+                                alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
+                            }else{
+
+                            }
+                        })
                     }else{
 
                     }
@@ -274,11 +278,20 @@
                 },
                 dataType : "JSON",
                 success : (data)=>{
+                    console.log('시발');
+
                     if(!mediaDevices){
-                        if($(this).initCam(authvideo)){
-                            $(this).ajaxCall_faceAuth($('#faceAuthID').val(),sendImg);
-                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
-                        }
+                        //console.log('되니?'+$(this).initCam(authvideo));
+                        console.log($(this).initCam(authvideo)+"hey");
+                        $(this).initCam(authvideo,function(isSuccess){
+                            if(isSuccess){
+                                console.log('its success')
+                                $(this).ajaxCall_faceAuth($('#faceAuthID').val());    
+                                alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
+                            }else{
+                                console.log('[CRITICAL]while init cam, exception ocure')    
+                            }
+                        });
                     }
                     if(data['isReady'] && (data['userId'] === userId)){
                         $(this).togglefaceAuth(2,true);

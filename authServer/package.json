@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "opencv4nodejs": "^4.9.0",
     "socket.io": "^2.1.1"
   }
 }
