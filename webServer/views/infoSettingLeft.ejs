@@ -1,0 +1,36 @@
+<script>
+    $(function(){
+        $('.label').on('click',(event)=>{
+            //console.log(event.target.id);
+            switch(event.target.id){
+                case 'infoLeftMenu_1':{
+                    console.log(event.target.id);
+                    break;
+                }
+                case 'infoLeftMenu_2':{
+                    console.log(event.target.id);
+                    break;
+                }
+                default : {
+                    console.log(`wrong select`);
+                    break;
+                }
+                    
+            }
+        });
+    });
+</script>
+<div class="col-12">
+    <table class="table">
+        <tr>
+            <th>
+                <label id="infoLeftMenu_1" class="label label_infoLeft"> FaceAuthSetting </label>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label id="infoLeftMenu_2" class="label label_infoLeft"> hello </label>
+            </th>
+        </tr>
+    </table>
+</div>

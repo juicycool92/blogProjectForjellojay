@@ -1,0 +1,630 @@
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+    var gloUserId;//전역유저id
+    var video;
+    var constraints;
+    var socket = io();
+    var isFaceAuthSuccess = false;
+    var facialAttempUserId;
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    socket.on('facialAuthRes',(bIsSuccess)=>{
+        if(isFaceAuthSuccess){
+            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"Auth successfully");
+        }else if(bIsSuccess){
+            isFaceAuthSuccess = true;
+            console.log('auth success!!');
+        }else{
+            console.log('auth failed');
+            faceAuthCommManager();
+        }
+    });
+    const _ALERT = { 
+                        "STATUS" : {
+                            "TRUE":"alert-success","FALSE":"alert-danger","INFO":"alert-info"
+                        },
+                        "TYPE" : {
+                            "LOGIN":0,"SIGN":1,"FACEAUTH":2
+                        }
+                    };
+    
+    var loginSign,signSign,authSign;
+    function faceAuthCommManager(){
+        context.drawImage(video,0,0,context.width,context.height);
+        //let canvas = new canvas();
+        const containerImage = canvas.toDataURL('image/webp');
+        //console.log(document.getElementById('faceAuthID').value);
+        socket.emit('facialAuth',document.getElementById('faceAuthID').value,containerImage);    
+        console.log('send auth')
+    }
+    function deleteAlertClass(targetObject){
+        if(targetObject.classList.contains(_ALERT.STATUS.TRUE)){
+            targetObject.classList.remove(_ALERT.STATUS.TRUE);
+        }
+        if(targetObject.classList.contains(_ALERT.STATUS.FALSE)){
+            targetObject.classList.remove(_ALERT.STATUS.FALSE);
+        }
+        if(targetObject.classList.contains(_ALERT.STATUS.INFO)){
+            targetObject.classList.remove(_ALERT.STATUS.INFO);
+        }
+    }
+    function alertSetting(alertType = null, isVisiable = false, status = _ALERT.STATUS.FALSE, message = null){
+        switch(alertType){
+            case _ALERT.TYPE.LOGIN : {
+                deleteAlertClass(loginSign[0]);                
+                loginSign[0].classList.add(status);
+                isVisiable ? ( loginSign[0].classList.contains('in') ? null : loginSign[0].classList.add('in') ) : ( loginSign[0].classList.contains('in') ? loginSign[0].classList.remove('in') : null );
+                if(message){
+                    loginSign[1].innerText = message;
+                }
+                break;
+            }
+            case _ALERT.TYPE.SIGN : {
+                deleteAlertClass(signSign[0]);                
+                signSign[0].classList.add(status);
+                isVisiable ? ( signSign[0].classList.contains('in') ? null : signSign[0].classList.add('in') ) : ( signSign[0].classList.contains('in') ? signSign[0].classList.remove('in') : null );
+                if(message){
+                    signSign[1].innerText = message;
+                }
+                break;
+            }
+            case _ALERT.TYPE.FACEAUTH : {
+                deleteAlertClass(authSign[0]);                
+                authSign[0].classList.add(status);
+                isVisiable ? ( authSign[0].classList.contains('in') ? null : authSign[0].classList.add('in') ) : ( authSign[0].classList.contains('in') ? authSign[0].classList.remove('in') : null );
+                if(message){
+                    authSign[1].innerText = message;
+                }
+                break;
+            }
+        }
+    }
+    function alertToggle(isVisiable,alertId){
+        if(isVisiable==true){
+            document.getElementById(''+alertId+'').classList.add('in') ;
+        }else if(isVisiable==false){
+            document.getElementById(''+alertId+'').classList.remove('in') ;
+        }else if(isVisiable==null){
+            if(document.getElementById(''+alertId+'').classList.contains('in')){
+                document.getElementById(''+alertId+'').classList.remove('in') ;
+            }else{
+                document.getElementById(''+alertId+'').classList.add('in') ;
+            }
+        }
+    }
+
+    const adminFunc = { //check this account is admin / display admin menu if this authed account is admin
+        isAdmin : (userId)=>{
+            if(userId==='admin')
+                return true;
+            else 
+                return false;
+        },
+        activeAdminMenu:(isVisiable)=>{
+            const adminDivClass =document.getElementById('adminDiv').classList; 
+            if(isVisiable){
+                adminDivClass.add('in');
+            }else if(isVisiable==false){
+                adminDivClass.remove('in');
+            }else if(!isVisiable){
+                if(adminDivClass.contains('in')){
+                    adminDivClass.remove('in') ;
+                }else{
+                    adminDivClass.add('in') ;
+                }
+            }
+        },
+        btnWritePost:_=>{
+            document.location.href="/writePost";
+        }
+    }
+
+    $(function(){   
+        
+        $.fn.initCam = ()=>{
+            video = document.getElementById('video');
+            constraints = {
+                video : {
+                    width : 640
+                }
+            };
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(mediaStream=>{
+                    video.srcObject = mediaStream;
+                    video.onloadedmetadata = e =>{ 
+                        video.style.width = video.videoWidth+"px";
+                        video.style.height = video.videoHeight+"px";
+                        canvas.width = video.videoWidth;
+                        context.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.height = video.videoHeight;
+                        video.play();
+                        //$(this).faceAuthCommManager();
+                        faceAuthCommManager();
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.TRUE,"gathering information . . . ");
+                    }
+                }).catch(e =>{
+                    switch(e.name){
+                        case "NotAllowedError":{
+                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"You must allow cam for Face Auth");
+                            break;
+                        }
+                        default : {
+                            alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"Unknown error!!!");
+                            break;
+                        }
+                    }   
+                });
+            video.setAttribute("playsinline", true);
+        }
+        $.fn.togglefaceAuth = (order,isActivate)=>{
+            switch(order){
+                case 1: {
+                    isActivate ? (
+                        $('#faceAuth_1_div').show(), $('#faceAuth_2_div').hide()) : ($('#faceAuth_1_div').hide(), $('#faceAuth_2_div').show());                    
+                    break;
+                }
+                case 2: {
+                    if(isActivate){
+                        $('#faceAuth_1_div').hide();
+                        $('#faceAuth_2_div').show();
+                        $('#video')[0].style.width = "320px";
+                        $('#video')[0].style.height = "240px";
+                        $(this).initCam();
+                    }else{
+
+                    }
+                    break;
+                }
+                default: {
+                    console.log('toggleFaceAuth error');
+                    break;
+                }
+            }
+        }
+        $.fn.ajaxCall_isUserReadyFaceAuth = userId=>{
+            $.ajax({
+                type : "POST",
+                url : "/isUserReadyFaceAuth",
+                data : {
+                    "userId" : userId
+                },
+                dataType : "JSON",
+                success : (data)=>{
+                    
+                    if(data['isReady'] && (data['userId'] === userId)){
+                        $(this).togglefaceAuth(2,true);
+                        
+                    }else{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"this user is not register for face auth!");
+                    }
+                    
+                },
+                statusCode : {
+                    400 : ()=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"error! 400");
+                    },
+                    401 : ()=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"user not exist!");
+                    },
+                    500 : ()=>{
+                        alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"server error 500");
+                    },
+
+                },
+                error : ()=>{
+                    alertSetting(_ALERT.TYPE.FACEAUTH,true,_ALERT.STATUS.FALSE,"uncaught error!!!");
+                }
+            });
+        }        
+        $.fn.loginFunc = function(reqFlag){
+            switch(reqFlag){
+                case "Signin":{
+                    let reqId;
+                    let reqPw;
+                    let reqName,reqMail;
+                    if(!$('#modalSignID').val()){
+                        $('#modalSignID').attr('class','form-control input-red');
+                        alertSetting(_ALERT.TYPE.SIGN,true,_ALERT.STATUS.FALSE,"ID is empty!");
+                        return;
+                    }else{
+                        reqId = $('#modalSignID').val();
+                        $('#modalSignID').attr('class','form-control input-green');
+                    }if(!$('#modalSignPW').val()){
+                        $('#modalSignPW').attr('class','form-control input-red');
+                        $('#modalSignPWre').attr('class','form-control input-red');
+                        alertSetting(_ALERT.TYPE.SIGN,true,_ALERT.STATUS.FALSE,"PW is empty!");
+                        return;
+                    }else if($('#modalSignPW').val() !== $('#modalSignPWre').val() ){
+                        $('#modalSignPWre').attr('class','form-control input-red');
+                        alertSetting(_ALERT.TYPE.SIGN,true,_ALERT.STATUS.FALSE,"must fill PW and PWre equally!");
+                        return;
+                    }else{
+                        reqPw = $('#modalSignPW').val();
+                        $('#modalSignPW').attr('class','form-control input-green');
+                        $('#modalSignPWre').attr('class','form-control input-green');
+                    }
+                    alertSetting(_ALERT.TYPE.SIGN,false,_ALERT.STATUS.FALSE,"");
+
+                    reqName = $('#modalSignName').val();
+                    reqMail = $('#modalSignMail').val();
+                    
+                    $.ajax({
+                       type : "POST",
+                        url : "/Signin",
+                        data : {
+                            'reqId':reqId,
+                            'reqPw':reqPw,
+                            'reqName':reqName,
+                            'reqMail':reqMail
+                        },
+                        dataType : "JSON",
+                        success : function(data){
+                            $("#localSignModal .close").click();
+                            $('#signinSuccessAlert').show();
+                            $('#modalLoginID').val(data.userId);
+                            alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.TRUE,"Sign in success!");
+                        },
+                        statusCode:{ 
+                            400 : function(data){
+                                alertSetting(_ALERT.TYPE.SIGN,true,_ALERT.STATUS.FALSE,data.responseJSON.message);
+                            }
+                        },
+                        error : function(){
+                            alertSetting(_ALERT.TYPE.SIGN,true,_ALERT.STATUS.FALSE,"Signin server connection failed!");
+                        }
+                    });
+                    break;
+                }
+                case "Login":{
+                    let reqId = $('#modalLoginID').val();
+                    let reqPw = $('#modalLoginPW').val();
+                    if(!reqId){
+                        alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.FALSE,"Must fill ID!");
+                        return;
+                    }else if(!reqPw){
+                        alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.FALSE,"Must fill PW!");
+                        return;
+                    }
+                    alertSetting(_ALERT.TYPE.LOGIN,false,_ALERT.STATUS.FALSE,"");
+
+                    $.ajax({
+                        type : "POST",
+                        url : "/Login-local",
+                        data : {
+                            'reqId':reqId,
+                            'reqPw':reqPw
+                        },
+                        dataType : "JSON",
+                        success : function(data){},
+                        statusCode:{ 
+                            200 : function(data){
+                                console.log(data.message);
+                                //추가작업을 여기부터 작성할것
+                                $("#LoginModal .close").click()
+                                gloUserId = reqId;
+                                alertToggle(false,'notLogin-div');
+                                alertToggle(true,'Login-div');
+                                $('#loginUser-p').text(reqId)
+                                 ;
+                                if(adminFunc.isAdmin(reqId)){
+                                    adminFunc.activeAdminMenu(true);
+                                }else{
+                                    adminFunc.activeAdminMenu(false);
+                                }
+                            },
+                            400 : function(data){
+                                alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.FALSE,data.responseJSON.message);
+                            }
+                        },
+                        error : function(){
+                            alertSetting(_ALERT.TYPE.LOGIN,true,_ALERT.STATUS.FALSE,'Login server not response!!!');
+                        }
+                    });
+                    break;
+                }
+                case 'faceAuth_1' : {
+                    //여기서 이미 존재하는 아이디인가, faceAuth적용이 되어있는가를 확인
+                    $(this).ajaxCall_isUserReadyFaceAuth($('#faceAuthID').val());
+                    break;
+                }
+                case 'openModal' : {//in case of open modal button.
+                    break;
+                }
+                default : {
+                    console.log('Unknown request');
+                }
+            }
+        };
+        $(document).ready(function(){
+            loginSign = [document.getElementById('SignAlert_login'), document.getElementById('SignAlert_login_message')];
+            signSign = [document.getElementById('SignAlert_signin'), document.getElementById('SignAlert_signin_message')];
+            authSign = [document.getElementById('SignAlert_faceAuth'), document.getElementById('SignAlert_faceAuth_message')];
+            $.ajax({        //this ajax is called in page is ready. display total visit count on the top right app
+                type : "GET",
+                url : "/visitCounter",
+                dataType : "JSON",
+                success : function(data){
+                    var countString = String(data.visit);
+                    var numbers = new Array();
+                    if(countString.length > 5){
+                        var i = countString.length - 5;
+                        for(var j = 0 ; j < 5 ; j++){
+                            numbers[j]=countString[i+j];
+                        }
+                    }else{
+                        var i = 5 - countString.length;
+                        for(var j = 0 ; j < i ; j++){
+                            numbers[j]='0';
+                        }
+                        var h = 0 ;
+                        for(var j = i ;j<5;j++){
+                            numbers[j]=countString[h++];
+                        }
+                    }                
+                    for(var i = 0 ; i < 5 ; i++){
+                        $('#counter'+(i+1)+'A').attr("srcset","public/number/number"+numbers[i]+".png");    
+                        $('#counter'+(i+1)+'B').attr("src","public/number/th_number"+numbers[i]+".png");    
+                    }          
+                    if(data.user){
+                        gloUserId = data.user;
+                        if(adminFunc.isAdmin(gloUserId)){
+                            adminFunc.activeAdminMenu(true);
+                        }else{
+                            adminFunc.activeAdminMenu(false);
+                        }
+                        alertToggle(false,'notLogin-div');
+                        alertToggle(true,'Login-div');
+                        
+                        $('#loginUser-p').text(data.user);
+                    }else{
+                        
+                        alertToggle(true,'notLogin-div');
+                        alertToggle(false,'Login-div');
+                        adminFunc.activeAdminMenu(false);
+                    }
+                },
+                error : function(){
+                    console.log('req counter failed');
+                }
+            });
+            $('.btn_modal').on('click',function(){
+                        console.log($(this).val());
+                        $(this).loginFunc($(this).val());
+            });  
+            $('#FaceAuthModal').on('show.bs.modal',(e)=>{
+                console.log(e);
+                $(this).togglefaceAuth(1,true);
+                console.log('show')
+            });
+            $('#FaceAuthModal').on('hide.bs.modal','modal-in',(e)=>{
+                console.log(e);
+                console.log('hide')
+            });
+            $('#modalClose').on('hide.bs.modal',function(e){
+                
+                console.log('도나');
+
+            });
+            $('#logoutBtn').on('click',function(){
+                console.log('로그아웃 버튼 클릭됨');
+                $.ajax({
+                    type : "POST",
+                    url : "/Logout",
+                    data : {
+                        'reqId':gloUserId
+                    },
+                    dataType : "JSON",
+                    success : function(data){
+                        console.log('로그아웃 성공, 상태코드는?');
+                    },
+                    statusCode : {
+                        200 : function(){
+                            console.log('logout success');
+                            alertToggle(true,'notLogin-div');
+                            alertToggle(false,'Login-div');
+                        },
+                        400 : function(){
+                            console.log('logout faield?');
+                        }
+                    },
+                    error : function(){
+                        console.log('logout server connection failed');
+                    }
+                });
+            });
+        });
+
+    });
+</script>
+
+    <!-- right nav -->
+    <div class="col-lg-3 com-md-12 align-content-center nopadding " style="background-color: #f7f7f7">
+        <div row>
+        
+            <div class="col-auto" style="text-align: center">
+
+                Total visit
+            </div>
+            <div class="col-12  align-content-center" align="center" >
+                <picture>
+                    <source id="counter1A" media="(min-width:65em)" srcset="public/number/number0.png">
+                    <!--<source srcset="public/number/number1.png">-->
+                    <img id="counter1B"  src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
+                </picture>
+                <picture>
+                    <source id="counter2A"  media="(min-width:65em)" srcset="public/number/number0.png">
+                    <!--<source srcset="public/number/number1.png">-->
+                    <img id="counter2B"  src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
+                </picture>
+                <picture>
+                    <source id="counter3A"  media="(min-width:65em)" srcset="public/number/number0.png">
+                    <!--<source srcset="public/number/number1.png">-->
+                    <img id="counter3B"  src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
+                </picture>
+                <picture>
+                    <source id="counter4A"  media="(min-width:65em)" srcset="public/number/number0.png">
+                    <!--<source srcset="public/number/number1.png">-->
+                    <img id="counter4B"  src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
+                </picture>
+                <picture>
+                    <source id="counter5A"  media="(min-width:65em)" srcset="public/number/number0.png">
+                    <!--<source srcset="public/number/number1.png">-->
+                    <img  id="counter5B" src="public/number/th_number1.png" class="img-thumbnail" style="max-height: 50px;height: auto;width: auto">
+                </picture>
+            </div>
+            <div class="col-12 collapse align-content-center" id="notLogin-div">
+                <br>
+                <input type="button"id="loginModal" class="btn btn-info center-block"data-toggle="modal" data-target="#LoginModal" value="LOGIN">
+            </div>
+            <div class="col-12 collapse align-content-center" id="Login-div">
+                <p>Welcome </p><p id="loginUser-p"></p>
+                <div class="row col-12">
+                    <input type="button" id="logoutBtn" class="btn btn-info center-block" value="LOGOUT">
+                </div>
+                <div class="row col-12 collapse lesspadding" id="adminDiv">
+                    <p class="">Admin Tool</p>
+                    <input type="button" id="WriteBtn"  class="btn btn-info center-block" value="WritePost" onClick="adminFunc.btnWritePost()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Login Modal -->
+<div class="modal fade in row" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered row" role="document">
+        <div class="modal-content row lesspadding align-content-center">
+            <div class="modal-header row col-12">
+                <h4 class="modal-title" id="exampleModalLabel">Login</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body row col-12 justify-content-center  align-content-center login-modal-main">
+                <div class="row col-10">
+                    <table class="table">
+                        <tr style="border-top:hidden;">
+                            <th class="">ID</th>
+                            <th><input type="text"  class="form-control" id="modalLoginID"></th>
+                        </tr>
+                        <tr>
+                            <th class="">PW</th>
+                            <th><input type="password" class="form-control" id="modalLoginPW"></th>
+                        </tr>
+                    </table>
+                </div>
+                <div class="row col-8">
+                    <div class="col-6"><button type="button" class="btn btn-md w-100 btn_modal" value="openModal" id="modalSignin" data-toggle="modal" data-target="#localSignModal">Sign</button></div>
+                    <div class="col-6"><input type="button" class="btn btn-md w-100 btn_modal" value="Login" id="modalLogin"></div>
+                </div>
+                <div class="row col-10 align-content-center lesspadding-top ">
+                    <p class="text-center col-12">...or login as</p>
+                </div>
+                <div class="row col-6 ">
+                    <div class="col-12">
+                        <button class="btn btn-md w-100 btn_modal" id="modalFaceAuth" value="openModal" data-toggle="modal" data-target="#FaceAuthModal">
+                        FaceAuth
+                        </button>
+                    </div>
+                    <!-- add in Oct 04, each button is not connected YET -->
+                    <!-- this button's size is currently missmatch!!! recalibrate it ASAP -->
+                </div>
+                
+                <div class="row col-12 alert alert-success no-margin collapse" role="alert" id="SignAlert_login">
+                    <p class="text-center col-12" id="SignAlert_login_message">umm</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--end-->
+
+<!--Local Sign Modal -->
+<div class="modal fade row" id="localSignModal" tabindex="2" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered row" role="document">
+        <div class="modal-content row lesspadding align-content-center">
+            <div class="modal-header row col-12">
+                <h4 class="modal-title" id="exampleModalLabel">Sign in</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body row col-12 justify-content-center  align-content-center">
+                <div class="row col-10">
+                    <table class="table">
+                        <tr style="border-top:hidden;">
+                            <th class="text-danger">ID</th>
+                            <th><input type="text"  class="form-control" id="modalSignID"></th>
+                        </tr>
+                        <tr>
+                            <th class="text-danger">PW</th>
+                            <th><input type="password" class="form-control" id="modalSignPW"></th>
+                        </tr>
+                        <tr>
+                            <th class="text-danger">PW re</th>
+                            <th><input type="password" class="form-control" id="modalSignPWre"></th>
+                        </tr>
+                        <tr>
+                            <th class="">Name</th>
+                            <th><input type="text" class="form-control" id="modalSignName"></th>
+                        </tr>
+                        <tr>
+                            <th class="">Mail</th>
+                            <th><input type="Mail" class="form-control" id="modalSignMail"></th>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="row col-6 lesspadding">
+                    <div class="col-12"><input type="button" class="btn btn-md w-100 btn_modal" value="Signin" id="modalSignin"></div>
+                </div>
+
+                <div class="row col-12 alert alert-success no-margin collapse" role="alert" id="SignAlert_signin">
+                    <p class="text-center col-12" id="SignAlert_signin_message">umm</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<!--end-->
+<!--Face Auth Modal -->
+<div class="modal fade row" id="FaceAuthModal" tabindex="2" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered row" role="document">
+        <div class="modal-content row lesspadding align-content-center">
+            <div class="modal-header row col-12">
+                <h4 class="modal-title" id="exampleModalLabel">Face Auth Login</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalClose">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body row col-12 justify-content-center  align-content-center">
+                <div class="row col-10">
+                    <div class="col-12" id="faceAuth_1_div">
+                        <table class="table" >
+                            <tr style="border-top:hidden;">
+                                <th class="text"> ID </th>
+                                <th class="">
+                                    <input type="text" class="form-control" id="faceAuthID"/>
+                                <th>
+                            </tr>
+                        </table>
+                        <div class="row col-12 alert alert-danger no-margin collapse" role="alert" id="falseSignAlert">
+                            <p class="text-center col-12 h3 no-margin" id="falseSignAlertContext"></p>
+                        </div>
+                        <div class="col-6 offset-3">
+                            <button class="btn btn-md w-100 btn_modal" id="btn_faceAuth_1_div_proceed" value="faceAuth_1">next</button>
+                        </div>
+                    </div>
+                    <div class="col-12" id="faceAuth_2_div">
+                        <video class="userCapImage col-10" src="" id="video" style="width:320px;height:0px" autoplay='true'></video>
+                    </div>
+                    <div class="row col-12 alert alert-success no-margin collapse" role="alert" id="SignAlert_faceAuth">
+                        <p class="text-center col-12" id="SignAlert_faceAuth_message">umm</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--end-->
