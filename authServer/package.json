@@ -1,0 +1,15 @@
+{
+  "name": "authserver",
+  "version": "1.0.0",
+  "description": "this is blogProjectForJellojay's auth Socket server. this is not the web server application. so you need to run server application too for run.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "opencv4nodejs": "^4.9.0",
+    "socket.io": "^2.1.1"
+  }
+}

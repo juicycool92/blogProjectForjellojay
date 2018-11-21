@@ -1,0 +1,53 @@
+<script>
+    function goToAbout(){
+        document.location.href='/about';
+    }
+    function goToMain(){
+        document.location.href='/';
+    }
+    function goToBlog(){
+        document.location.href='/blogList';
+    }
+    function goToCode(){
+        document.location.href='/codeList';
+    }
+</script>
+<!--
+<nav style="align-content: center;width: 100%;margin-bottom: 1%">
+-->
+<div class="row">
+    <div class="col-xs-12">
+        <img class="img-fluid" style="width: fit-content" src="public/indexLogo.png" onclick="goToMain()"/>        
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12 lesspadding-bottom">
+            
+        <div class="lesspadding-right col-xs-3">
+            <button type="button" onclick="goToAbout()" class="btn btn-nav font-weight-normal btn-block" style="">About</button>
+        </div>
+        <div class=" lesspadding-right col-xs-3">
+            <button type="button" onclick="goToCode()" class="btn btn-nav font-weight-normal btn-block" style="">Code</button>    
+        </div>
+        <div class=" lesspadding-right col-xs-3 ">
+            <button type="button" onclick="goToBlog()" class="btn btn-nav font-weight-normal btn-block" style="">Blog</button>    
+        </div>
+        <div class="nopadding col-xs-3 ">
+            <button type="button" onclick="goToAbout()" class="btn btn-nav font-weight-normal btn-block" style="">stuff</button>    
+        </div>            
+    </div>
+</div>
+
+<!--
+    <img class="img-fluid" style="width: fit-content" src="public/indexLogo.png" onclick="goToMain()"/>
+
+    <div class="container d-flex justify-content-center" style="width: 100%;padding: 0%" >
+            <button type="button" onclick="goToAbout()" class="btn btn-info btn-block " style="margin: 0%;margin-right: 1%;width: 24.25%;float: left ">About</button>
+            <button type="button" onclick="goToCode()" class="btn btn-info btn-block  " style="margin: 0%;margin-right: 1%;width: 24.25%;float: left ">Code</button>
+            <button type="button" onclick="goToBlog()" class="btn btn-info btn-block  " style="margin: 0%;margin-right: 1%;width: 24.25%;float: left ">Blog</button>
+            <button type="button" onclick="goToAbout()" class="btn btn-info btn-block  " style="margin: 0%;width: 24.25%;float: left ">stuff</button>
+        
+    </div>
+
+</nav>
+-->
