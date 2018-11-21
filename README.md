@@ -11,3 +11,5 @@ Im always welcome for your warm and kind advice or help!
 But dont i dont want you to edit this git directly.
 
 Thanks
+
+* new 2.0 version was updated in Nov22, 2018. 
